@@ -1,0 +1,27 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "dev",
+      "problemMatcher": [],
+      "label": "Start Dev Server (npm run dev)",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "type": "npm",
+      "script": "build",
+      "problemMatcher": [],
+      "label": "Build for Production (npm run build)"
+    },
+    {
+      "type": "shell",
+      "command": "python3 scripts/create_zip.py",
+      "problemMatcher": [],
+      "label": "Rebuild 3-Layer Project ZIP"
+    }
+  ]
+}

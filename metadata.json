@@ -1,0 +1,8 @@
+{
+  "name": "EV BMS Data Analyzer",
+  "description": "Time-series analyzer and data-quality inspection tool for Electric Vehicle Battery Management System (BMS) telemetry.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
