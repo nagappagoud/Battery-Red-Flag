@@ -99,11 +99,9 @@ CREATE TABLE IF NOT EXISTS public.battery_readings (
     soc_pct NUMERIC(5, 2),
     mode TEXT DEFAULT 'unknown',
     is_valid BOOLEAN DEFAULT true NOT NULL,
-    raw_data JSONB,
+    issues JSONB DEFAULT '[]'::jsonb NOT NULL,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
-
-CREATE INDEX IF NOT EXISTS idx_battery_readings_session_time ON public.battery_readings (session_id, timestamp ASC);
 
 CREATE TABLE IF NOT EXISTS public.bms_alerts (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -111,26 +109,23 @@ CREATE TABLE IF NOT EXISTS public.bms_alerts (
     vehicle_id TEXT NOT NULL REFERENCES public.vehicles(vehicle_id) ON DELETE CASCADE,
     alert_type TEXT NOT NULL,
     severity TEXT NOT NULL,
-    field TEXT,
-    message TEXT NOT NULL,
-    row_number INTEGER,
-    timestamp TIMESTAMPTZ,
+    metric_field TEXT NOT NULL,
+    trigger_value NUMERIC(10, 2),
+    threshold_limit NUMERIC(10, 2),
+    description TEXT NOT NULL,
     acknowledged BOOLEAN DEFAULT false NOT NULL,
-    acknowledged_at TIMESTAMPTZ,
-    acknowledged_by TEXT,
-    acknowledgement_notes TEXT,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS public.investigation_results (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    session_id TEXT NOT NULL REFERENCES public.telemetry_sessions(id) ON DELETE CASCADE,
+    session_id TEXT UNIQUE NOT NULL REFERENCES public.telemetry_sessions(id) ON DELETE CASCADE,
     vehicle_id TEXT NOT NULL REFERENCES public.vehicles(vehicle_id) ON DELETE CASCADE,
-    status TEXT NOT NULL DEFAULT 'pending',
-    engineer_notes TEXT DEFAULT '',
-    root_cause_category TEXT DEFAULT 'unspecified',
-    findings JSONB DEFAULT '{}'::jsonb,
-    investigated_by TEXT DEFAULT 'BMS Safety Engineer',
+    investigator_id TEXT DEFAULT 'SafetyEngineer-01' NOT NULL,
+    status TEXT DEFAULT 'pending' NOT NULL,
+    root_cause_category TEXT DEFAULT 'unspecified' NOT NULL,
+    engineer_notes TEXT,
+    findings JSONB DEFAULT '{}'::jsonb NOT NULL,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -141,79 +136,84 @@ ALTER TABLE public.battery_readings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.bms_alerts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.investigation_results ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow public read access to vehicles" ON public.vehicles FOR SELECT USING (true);
-CREATE POLICY "Allow public read access to telemetry_sessions" ON public.telemetry_sessions FOR SELECT USING (true);
-CREATE POLICY "Allow public read access to battery_readings" ON public.battery_readings FOR SELECT USING (true);
-CREATE POLICY "Allow public read access to bms_alerts" ON public.bms_alerts FOR SELECT USING (true);
-CREATE POLICY "Allow public read access to investigation_results" ON public.investigation_results FOR SELECT USING (true);
-CREATE POLICY "Allow anon insert vehicles" ON public.vehicles FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow anon insert telemetry_sessions" ON public.telemetry_sessions FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow anon insert battery_readings" ON public.battery_readings FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow anon insert bms_alerts" ON public.bms_alerts FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow anon update bms_alerts for acknowledgement" ON public.bms_alerts FOR UPDATE USING (true) WITH CHECK (true);
-CREATE POLICY "Allow anon insert investigation_results" ON public.investigation_results FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow anon update investigation_results" ON public.investigation_results FOR UPDATE USING (true) WITH CHECK (true);`;
+CREATE POLICY "Allow public read vehicles" ON public.vehicles FOR SELECT USING (true);
+CREATE POLICY "Allow public insert vehicles" ON public.vehicles FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update vehicles" ON public.vehicles FOR UPDATE USING (true);
+
+CREATE POLICY "Allow public read telemetry_sessions" ON public.telemetry_sessions FOR SELECT USING (true);
+CREATE POLICY "Allow public insert telemetry_sessions" ON public.telemetry_sessions FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update telemetry_sessions" ON public.telemetry_sessions FOR UPDATE USING (true);
+
+CREATE POLICY "Allow public read battery_readings" ON public.battery_readings FOR SELECT USING (true);
+CREATE POLICY "Allow public insert battery_readings" ON public.battery_readings FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Allow public read bms_alerts" ON public.bms_alerts FOR SELECT USING (true);
+CREATE POLICY "Allow public insert bms_alerts" ON public.bms_alerts FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update bms_alerts" ON public.bms_alerts FOR UPDATE USING (true);
+
+CREATE POLICY "Allow public read investigation_results" ON public.investigation_results FOR SELECT USING (true);
+CREATE POLICY "Allow public insert investigation_results" ON public.investigation_results FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update investigation_results" ON public.investigation_results FOR UPDATE USING (true);`;
 
     navigator.clipboard.writeText(sqlText);
     setCopiedSql(true);
     setTimeout(() => setCopiedSql(false), 2500);
   };
 
-  const isConnected = Boolean(status?.connected && status?.tablesExist);
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="bg-[#0e131d] border border-slate-800 rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-150">
+      <div className="bg-[#03070d] border border-cyan-500/40 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-[0_0_50px_rgba(0,245,255,0.2)] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-cyan-950/80 bg-[#020509]/90 sticky top-0 z-10 backdrop-blur">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-800/50 text-emerald-400">
-              <Database className="w-4 h-4" />
+            <div className="p-2 rounded-xl bg-cyan-950/60 text-cyan-400 border border-cyan-500/40 shadow-[0_0_12px_rgba(0,245,255,0.25)]">
+              <Database className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
-                Supabase PostgreSQL Integration
-              </h3>
-              <p className="text-xs text-slate-400">
-                Persistent database storage for EV battery telemetry, alerts &amp; investigations
+              <h3 className="font-semibold text-white text-base">Supabase Cloud PostgreSQL Console</h3>
+              <p className="text-xs text-cyan-400/70 font-mono">
+                Project: gnckwhhsdquaxfyzlxhi · ap-northeast-2
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+            className="p-1.5 text-cyan-400/60 hover:text-white hover:bg-cyan-950/50 rounded-lg transition-colors"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Body */}
-        <div className="p-6 space-y-5 overflow-y-auto text-xs text-slate-300">
-          {/* Status Overview Card */}
-          <div className="bg-slate-900/60 border border-slate-800 rounded-lg p-4 space-y-3">
+        {/* Content */}
+        <div className="p-6 space-y-5 text-xs text-cyan-100">
+          {/* Connection Overview Banner */}
+          <div className="p-4 rounded-xl bg-[#020509] border border-cyan-950/80 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-slate-400 font-medium">Connection Status</span>
               <div className="flex items-center gap-2">
-                {isConnected ? (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-950/60 text-emerald-400 border border-emerald-800/60">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
+                <Server className="w-4 h-4 text-cyan-400" />
+                <span className="font-semibold text-white">Database Cluster Connectivity</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {status?.connected ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-cyan-950/70 text-cyan-300 border border-cyan-400/60 shadow-[0_0_10px_rgba(0,245,255,0.25)]">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
                     Database Active &amp; Verified
                   </span>
                 ) : status?.configured ? (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-amber-950/60 text-amber-400 border border-amber-800/60">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-amber-950/60 text-amber-400 border border-amber-800/60">
                     <AlertTriangle className="w-3.5 h-3.5" />
                     Tables Not Created Yet
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-800 text-slate-400 border border-slate-700">
-                    <Server className="w-3.5 h-3.5" />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-cyan-950/40 text-cyan-400 border border-cyan-900/60">
+                    <Server className="w-3.5 h-3.5 text-cyan-400" />
                     Awaiting Publishable Key
                   </span>
                 )}
 
                 <button
                   onClick={onRefreshStatus}
-                  className="p-1.5 text-slate-400 hover:text-slate-200 bg-slate-800/80 hover:bg-slate-700 rounded-md transition-colors"
+                  className="p-1.5 text-cyan-400 hover:text-white bg-[#04080e] hover:bg-[#07131e] border border-cyan-950 rounded-lg transition-colors"
                   title="Refresh Connection Status"
                 >
                   <RefreshCw className="w-3 h-3" />
@@ -222,84 +222,84 @@ CREATE POLICY "Allow anon update investigation_results" ON public.investigation_
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-mono text-[11px]">
-              <div className="bg-[#090d16] p-2 rounded border border-slate-800">
-                <div className="text-slate-500 text-[10px]">Project ID</div>
-                <div className="text-slate-200 font-medium truncate">gnckwhhsdquaxfyzlxhi</div>
+              <div className="bg-[#04080e] p-2.5 rounded-lg border border-cyan-950">
+                <div className="text-cyan-400/60 text-[10px]">Project ID</div>
+                <div className="text-white font-medium truncate">gnckwhhsdquaxfyzlxhi</div>
               </div>
-              <div className="bg-[#090d16] p-2 rounded border border-slate-800">
-                <div className="text-slate-500 text-[10px]">Region</div>
-                <div className="text-slate-200 font-medium">ap-northeast-2</div>
+              <div className="bg-[#04080e] p-2.5 rounded-lg border border-cyan-950">
+                <div className="text-cyan-400/60 text-[10px]">Region</div>
+                <div className="text-white font-medium">ap-northeast-2</div>
               </div>
-              <div className="bg-[#090d16] p-2 rounded border border-slate-800">
-                <div className="text-slate-500 text-[10px]">Endpoint</div>
-                <div className="text-slate-200 font-medium truncate">gnckwh...co</div>
+              <div className="bg-[#04080e] p-2.5 rounded-lg border border-cyan-950">
+                <div className="text-cyan-400/60 text-[10px]">Endpoint</div>
+                <div className="text-white font-medium truncate">gnckwh...co</div>
               </div>
-              <div className="bg-[#090d16] p-2 rounded border border-slate-800">
-                <div className="text-slate-500 text-[10px]">RLS Policies</div>
-                <div className="text-emerald-400 font-medium">Active</div>
+              <div className="bg-[#04080e] p-2.5 rounded-lg border border-cyan-950">
+                <div className="text-cyan-400/60 text-[10px]">RLS Policies</div>
+                <div className="text-cyan-400 font-semibold">Active</div>
               </div>
             </div>
 
             {status?.error && (
-              <div className="p-3 bg-amber-950/30 border border-amber-800/40 rounded-lg text-amber-300 text-[11px] space-y-1">
+              <div className="p-3 bg-red-950/30 border border-red-500/40 rounded-xl text-red-200 text-[11px] space-y-1">
                 <div className="font-semibold flex items-center gap-1.5">
-                  <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+                  <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-red-400" />
                   <span>Setup Guidance</span>
                 </div>
-                <p className="text-amber-300/90 leading-relaxed">{status.error}</p>
+                <p className="text-red-200/90 leading-relaxed">{status.error}</p>
               </div>
             )}
           </div>
 
           {/* Database Tables Specification */}
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-slate-200 flex items-center gap-2">
-              <Shield className="w-3.5 h-3.5 text-slate-400" />
+            <h4 className="text-xs font-semibold text-white flex items-center gap-2">
+              <Shield className="w-3.5 h-3.5 text-cyan-400" />
               <span>Relational Schema Architecture</span>
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-              <div className="p-2.5 rounded bg-slate-900/40 border border-slate-800">
-                <div className="font-mono text-slate-200 font-medium">vehicles</div>
-                <div className="text-slate-400 text-[10px]">Profiles, pack capacity, nominal voltage</div>
+              <div className="p-2.5 rounded-xl bg-[#020509] border border-cyan-950/80">
+                <div className="font-mono text-cyan-300 font-semibold">vehicles</div>
+                <div className="text-cyan-400/60 text-[10px]">Profiles, pack capacity, nominal voltage</div>
               </div>
-              <div className="p-2.5 rounded bg-slate-900/40 border border-slate-800">
-                <div className="font-mono text-slate-200 font-medium">telemetry_sessions</div>
-                <div className="text-slate-400 text-[10px]">Drive/charge sessions, integrated Ah &amp; kWh</div>
+              <div className="p-2.5 rounded-xl bg-[#020509] border border-cyan-950/80">
+                <div className="font-mono text-cyan-300 font-semibold">telemetry_sessions</div>
+                <div className="text-cyan-400/60 text-[10px]">Drive/charge sessions, integrated Ah &amp; kWh</div>
               </div>
-              <div className="p-2.5 rounded bg-slate-900/40 border border-slate-800">
-                <div className="font-mono text-slate-200 font-medium">battery_readings</div>
-                <div className="text-slate-400 text-[10px]">Synchronized V, I, T, SOC time-series samples</div>
+              <div className="p-2.5 rounded-xl bg-[#020509] border border-cyan-950/80">
+                <div className="font-mono text-cyan-300 font-semibold">battery_readings</div>
+                <div className="text-cyan-400/60 text-[10px]">Synchronized V, I, T, SOC time-series samples</div>
               </div>
-              <div className="p-2.5 rounded bg-slate-900/40 border border-slate-800">
-                <div className="font-mono text-slate-200 font-medium">bms_alerts &amp; investigations</div>
-                <div className="text-slate-400 text-[10px]">Violation flags with acknowledgement audit log</div>
+              <div className="p-2.5 rounded-xl bg-[#020509] border border-cyan-950/80">
+                <div className="font-mono text-cyan-300 font-semibold">bms_alerts &amp; investigations</div>
+                <div className="text-cyan-400/60 text-[10px]">Violation flags with acknowledgement audit log</div>
               </div>
             </div>
           </div>
 
           {/* Migration Action Bar */}
-          <div className="bg-slate-900/40 border border-slate-800 rounded-lg p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="bg-[#020509] border border-cyan-950/80 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
-              <div className="font-medium text-slate-200 text-xs flex items-center gap-1.5">
-                <Terminal className="w-3.5 h-3.5 text-slate-400" />
+              <div className="font-semibold text-white text-xs flex items-center gap-1.5">
+                <Terminal className="w-3.5 h-3.5 text-cyan-400" />
                 <span>Apply Database Migrations</span>
               </div>
-              <p className="text-[11px] text-slate-400 mt-0.5">
-                Run the SQL migration in your Supabase SQL Editor to establish tables and RLS security rules.
+              <p className="text-[11px] text-cyan-400/70 mt-0.5">
+                Execute the SQL migration in your Supabase SQL Editor to establish tables and RLS security rules.
               </p>
             </div>
             <button
               onClick={handleCopyMigrationSql}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition-colors shrink-0"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-black bg-cyan-500 hover:bg-cyan-400 rounded-lg transition-all duration-200 shrink-0 shadow-[0_0_12px_rgba(0,245,255,0.3)] active:scale-95"
             >
               {copiedSql ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-emerald-400">Copied SQL</span>
+                  <Check className="w-3.5 h-3.5 text-black" />
+                  <span>Copied SQL</span>
                 </>
               ) : (
                 <>
-                  <Copy className="w-3.5 h-3.5 text-slate-400" />
+                  <Copy className="w-3.5 h-3.5 text-black" />
                   <span>Copy Migration SQL</span>
                 </>
               )}
@@ -309,18 +309,18 @@ CREATE POLICY "Allow anon update investigation_results" ON public.investigation_
           {/* Persisted Sessions in Supabase */}
           <div className="space-y-2 pt-1">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-semibold text-slate-200 flex items-center gap-2">
-                <Clock className="w-3.5 h-3.5 text-slate-400" />
+              <h4 className="text-xs font-semibold text-white flex items-center gap-2">
+                <Clock className="w-3.5 h-3.5 text-cyan-400" />
                 <span>Persisted Telemetry Sessions ({sessions.length})</span>
               </h4>
             </div>
 
             {loadingSessions ? (
-              <div className="py-6 text-center text-slate-500 font-mono text-[11px]">
+              <div className="py-6 text-center text-cyan-400/60 font-mono text-[11px]">
                 Querying Supabase PostgreSQL...
               </div>
             ) : sessions.length === 0 ? (
-              <div className="py-6 text-center text-slate-500 bg-slate-900/20 border border-slate-800/60 rounded-lg text-[11px]">
+              <div className="py-6 text-center text-cyan-400/60 bg-[#020509] border border-cyan-950/60 rounded-xl text-[11px]">
                 No sessions saved to Supabase yet. Ingest a telemetry stream and click &quot;Persist to Supabase&quot; to permanently store it.
               </div>
             ) : (
@@ -328,25 +328,25 @@ CREATE POLICY "Allow anon update investigation_results" ON public.investigation_
                 {sessions.map((s) => (
                   <div
                     key={s.id}
-                    className="p-2.5 rounded-lg bg-slate-900/50 border border-slate-800 flex items-center justify-between gap-3 hover:border-slate-700 transition-colors"
+                    className="p-3 rounded-xl bg-[#020509] border border-cyan-950/80 flex items-center justify-between gap-3 hover:border-cyan-500/50 transition-colors"
                   >
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-slate-200 truncate">{s.label}</span>
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">
+                        <span className="font-semibold text-white truncate">{s.label}</span>
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-950/60 text-cyan-300 border border-cyan-900/60">
                           {s.vehicle_id}
                         </span>
                         {s.is_simulated && (
-                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-950/40 text-amber-400 border border-amber-800/40">
+                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-950/40 text-cyan-400 border border-cyan-800/40">
                             Simulated
                           </span>
                         )}
                       </div>
-                      <div className="text-[10px] text-slate-400 flex items-center gap-3">
+                      <div className="text-[10px] text-cyan-400/70 flex items-center gap-3 font-mono">
                         <span>{s.total_records} records</span>
                         <span>{Math.round(s.duration_seconds)}s duration</span>
                         {s.unacknowledged_alerts_count ? (
-                          <span className="text-rose-400 font-medium">
+                          <span className="text-cyan-300 font-bold">
                             {s.unacknowledged_alerts_count} unacknowledged alerts
                           </span>
                         ) : null}
@@ -357,10 +357,10 @@ CREATE POLICY "Allow anon update investigation_results" ON public.investigation_
                         onLoadSession(s.id);
                         onClose();
                       }}
-                      className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-colors shrink-0"
+                      className="flex items-center gap-1 px-3 py-1 text-[11px] font-semibold text-cyan-200 bg-cyan-950/60 hover:bg-cyan-900 rounded-lg border border-cyan-600/50 hover:border-cyan-400 transition-all shrink-0 active:scale-95"
                     >
                       <span>Load</span>
-                      <ArrowRight className="w-3 h-3 text-slate-400" />
+                      <ArrowRight className="w-3 h-3 text-cyan-400" />
                     </button>
                   </div>
                 ))}
@@ -370,13 +370,13 @@ CREATE POLICY "Allow anon update investigation_results" ON public.investigation_
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-3.5 border-t border-slate-800 bg-[#090d16]">
-          <span className="text-[11px] text-slate-500 font-mono">
+        <div className="flex items-center justify-between px-6 py-3.5 border-t border-cyan-950/80 bg-[#020509]">
+          <span className="text-[11px] text-cyan-400/60 font-mono">
             Endpoint: https://gnckwhhsdquaxfyzlxhi.supabase.co
           </span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors"
+            className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-[#04080e] hover:bg-[#07131e] border border-cyan-950 hover:border-cyan-400 text-cyan-200 transition-all"
           >
             Close
           </button>

@@ -135,6 +135,11 @@ CREATE INDEX IF NOT EXISTS idx_investigations_status ON public.investigation_res
 
 -- ----------------------------------------------------------------------------
 -- ROW LEVEL SECURITY (RLS) POLICIES
+-- Hardened for Battery Red Flag architecture:
+-- - Read: Permitted for dashboard analytics and inspection
+-- - Insert: Protected with strict schema-validation constraints on input columns
+-- - Update: Permitted ONLY on bms_alerts (acknowledgement) and investigation_results (diagnosis)
+-- - Delete: FORBIDDEN for anonymous clients (immutable time-series safety record)
 -- ----------------------------------------------------------------------------
 ALTER TABLE public.vehicles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.telemetry_sessions ENABLE ROW LEVEL SECURITY;
@@ -163,35 +168,55 @@ CREATE POLICY "Allow public read access to investigation_results"
     ON public.investigation_results FOR SELECT
     USING (true);
 
--- 2. Insert/Update policies:
--- In development with anon/publishable key, allow authenticated or anon operations
--- When using service_role key on backend server, RLS is automatically bypassed
-CREATE POLICY "Allow anon insert vehicles"
+-- 2. Insert policies: Validated write access (prevents arbitrary / malicious payloads)
+CREATE POLICY "Allow validated insert vehicles"
     ON public.vehicles FOR INSERT
-    WITH CHECK (true);
+    WITH CHECK (
+        length(vehicle_id) > 0 AND length(vehicle_id) <= 128
+    );
 
-CREATE POLICY "Allow anon insert telemetry_sessions"
+CREATE POLICY "Allow validated insert telemetry_sessions"
     ON public.telemetry_sessions FOR INSERT
-    WITH CHECK (true);
+    WITH CHECK (
+        length(id) > 0 AND
+        mode IN ('driving', 'charging', 'idle', 'overall', 'unknown') AND
+        data_source IN ('uploaded_csv', 'manual_entry', 'reference_sample', 'connected_stream')
+    );
 
-CREATE POLICY "Allow anon insert battery_readings"
+CREATE POLICY "Allow validated insert battery_readings"
     ON public.battery_readings FOR INSERT
-    WITH CHECK (true);
+    WITH CHECK (
+        length(session_id) > 0 AND
+        length(vehicle_id) > 0 AND
+        timestamp IS NOT NULL
+    );
 
-CREATE POLICY "Allow anon insert bms_alerts"
+CREATE POLICY "Allow validated insert bms_alerts"
     ON public.bms_alerts FOR INSERT
-    WITH CHECK (true);
+    WITH CHECK (
+        length(session_id) > 0 AND
+        severity IN ('info', 'warning', 'error', 'critical') AND
+        length(message) > 0
+    );
 
-CREATE POLICY "Allow anon update bms_alerts for acknowledgement"
+CREATE POLICY "Allow validated insert investigation_results"
+    ON public.investigation_results FOR INSERT
+    WITH CHECK (
+        length(session_id) > 0 AND
+        status IN ('pending', 'in_progress', 'resolved', 'flagged_critical')
+    );
+
+-- 3. Update policies: Limited exclusively to alert acknowledgement and diagnostic notes
+CREATE POLICY "Allow update bms_alerts for acknowledgement"
     ON public.bms_alerts FOR UPDATE
     USING (true)
     WITH CHECK (true);
 
-CREATE POLICY "Allow anon insert investigation_results"
-    ON public.investigation_results FOR INSERT
-    WITH CHECK (true);
-
-CREATE POLICY "Allow anon update investigation_results"
+CREATE POLICY "Allow update investigation_results"
     ON public.investigation_results FOR UPDATE
     USING (true)
     WITH CHECK (true);
+
+-- Note: No DELETE policies are created for public/anon roles.
+-- Immutable safety audit logs can only be deleted via privileged service_role credentials.
+

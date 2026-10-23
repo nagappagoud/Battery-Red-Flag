@@ -138,15 +138,15 @@ export const InvestigationPanel: React.FC<InvestigationPanelProps> = ({
   const isPersisted = Boolean(activeSessionDbId);
 
   return (
-    <div className="bg-[#0e131d] border border-slate-800/80 rounded-xl p-5 shadow-sm space-y-5">
+    <div className="cockpit-panel p-5 sm:p-6 space-y-5">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-cyan-950/60 pb-4">
         <div>
-          <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-slate-400" />
+          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+            <ShieldAlert className="w-4 h-4 text-cyan-400" />
             <span>Battery Investigation &amp; Supabase Storage</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-cyan-200/70 mt-0.5">
             Record engineering diagnostic findings, root-cause categorization, and persist telemetry to Supabase PostgreSQL.
           </p>
         </div>
@@ -154,29 +154,29 @@ export const InvestigationPanel: React.FC<InvestigationPanelProps> = ({
         {/* Persistence Status Badge */}
         <div className="flex items-center gap-2">
           {isPersisted ? (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-950/40 text-emerald-400 border border-emerald-800/50">
-              <CheckCircle2 className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-950/70 text-cyan-300 border border-cyan-400/60 shadow-[0_0_12px_rgba(0,245,255,0.25)]">
+              <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
               <span>Persisted in Supabase</span>
             </div>
           ) : (
             <button
               onClick={handlePersistToSupabase}
               disabled={isSaving}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-black border border-cyan-300 transition-all duration-200 disabled:opacity-50 shadow-[0_0_18px_rgba(0,245,255,0.3)] hover:shadow-[0_0_24px_rgba(0,245,255,0.5)] active:scale-95"
             >
               {isSaving ? (
                 <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-black" />
                   <span>Saving to PostgreSQL...</span>
                 </>
               ) : saveSuccess ? (
                 <>
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-emerald-400">Saved Successfully</span>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-black" />
+                  <span>Saved Successfully</span>
                 </>
               ) : (
                 <>
-                  <Database className="w-3.5 h-3.5 text-slate-400" />
+                  <Database className="w-3.5 h-3.5 text-black" />
                   <span>Persist to Supabase</span>
                 </>
               )}
@@ -185,23 +185,23 @@ export const InvestigationPanel: React.FC<InvestigationPanelProps> = ({
 
           <button
             onClick={onOpenSupabaseModal}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white bg-slate-900 border border-slate-800 hover:border-slate-700 transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-cyan-200/80 hover:text-white bg-[#04080e] hover:bg-[#07131e] border border-cyan-900/50 hover:border-cyan-400 transition-all duration-200 active:scale-95 shadow-sm"
           >
-            <Database className="w-3 h-3 text-slate-400" />
+            <Database className="w-3.5 h-3.5 text-cyan-400" />
             <span>Manage DB</span>
           </button>
         </div>
       </div>
 
       {errorMessage && (
-        <div className="p-3 bg-amber-950/40 border border-amber-800/40 rounded-lg text-amber-300 text-xs flex items-center justify-between gap-2">
+        <div className="p-3 bg-red-950/40 border border-red-500/40 rounded-xl text-red-200 text-xs flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
+            <AlertTriangle className="w-4 h-4 shrink-0 text-red-400" />
             <span>{errorMessage}</span>
           </div>
           <button
             onClick={onOpenSupabaseModal}
-            className="underline text-amber-200 hover:text-white text-[11px] whitespace-nowrap"
+            className="underline text-cyan-300 hover:text-white text-[11px] whitespace-nowrap"
           >
             View SQL Migrations
           </button>
@@ -210,44 +210,44 @@ export const InvestigationPanel: React.FC<InvestigationPanelProps> = ({
 
       {/* Telemetry Provenance Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-        <div className="bg-slate-900/40 border border-slate-800 rounded-lg p-3 space-y-1">
-          <span className="text-[10px] font-mono uppercase text-slate-500">Data Source Provenance</span>
+        <div className="bg-[#03070d] border border-cyan-900/40 rounded-xl p-3.5 space-y-1">
+          <span className="text-[10px] font-mono uppercase text-cyan-400/60">Data Source Provenance</span>
           <div className="flex items-center gap-2">
-            <FileText className="w-3.5 h-3.5 text-slate-400" />
-            <span className="font-semibold text-slate-200 truncate">{sourceTitle}</span>
+            <FileText className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="font-semibold text-white truncate">{sourceTitle}</span>
           </div>
-          <div className="text-[11px] text-slate-400 font-mono">
+          <div className="text-[11px] text-cyan-400/70 font-mono">
             Mode: {dataSource.replace(/_/g, ' ')}
           </div>
         </div>
 
-        <div className="bg-slate-900/40 border border-slate-800 rounded-lg p-3 space-y-1">
-          <span className="text-[10px] font-mono uppercase text-slate-500">Simulation Indicator</span>
+        <div className="bg-[#03070d] border border-cyan-900/40 rounded-xl p-3.5 space-y-1">
+          <span className="text-[10px] font-mono uppercase text-cyan-400/60">Simulation Indicator</span>
           <div className="flex items-center gap-2">
             {isSimulated ? (
               <>
-                <span className="inline-block w-2 h-2 rounded-full bg-amber-400" />
-                <span className="font-semibold text-amber-400">Simulated / Reference Data</span>
+                <span className="inline-block w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#00f5ff]" />
+                <span className="font-semibold text-cyan-300">Simulated / Reference Data</span>
               </>
             ) : (
               <>
-                <span className="inline-block w-2 h-2 rounded-full bg-emerald-400" />
-                <span className="font-semibold text-emerald-400">Uploaded Telemetry Ingestion</span>
+                <span className="inline-block w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#00f5ff]" />
+                <span className="font-semibold text-cyan-300">Uploaded Telemetry Ingestion</span>
               </>
             )}
           </div>
-          <div className="text-[11px] text-slate-400 font-mono">
+          <div className="text-[11px] text-cyan-400/70 font-mono">
             {isSimulated ? 'Synthetic test cycle benchmark' : 'User-provided battery pack log'}
           </div>
         </div>
 
-        <div className="bg-slate-900/40 border border-slate-800 rounded-lg p-3 space-y-1">
-          <span className="text-[10px] font-mono uppercase text-slate-500">Storage Target</span>
+        <div className="bg-[#03070d] border border-cyan-900/40 rounded-xl p-3.5 space-y-1">
+          <span className="text-[10px] font-mono uppercase text-cyan-400/60">Storage Target</span>
           <div className="flex items-center gap-2">
-            <Database className="w-3.5 h-3.5 text-slate-400" />
-            <span className="font-semibold text-slate-200">Supabase (gnckwh...co)</span>
+            <Database className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="font-semibold text-white">Supabase (gnckwh...co)</span>
           </div>
-          <div className="text-[11px] text-slate-400 font-mono">
+          <div className="text-[11px] text-cyan-400/70 font-mono">
             Region: ap-northeast-2 (PostgreSQL)
           </div>
         </div>
@@ -256,56 +256,56 @@ export const InvestigationPanel: React.FC<InvestigationPanelProps> = ({
       {/* Investigation Inputs */}
       <div className="space-y-3 pt-1">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
-            <UserCheck className="w-3.5 h-3.5 text-slate-400" />
+          <span className="text-xs font-semibold text-white flex items-center gap-1.5">
+            <UserCheck className="w-3.5 h-3.5 text-cyan-400" />
             <span>Safety Engineer Diagnostic Log</span>
           </span>
-          <span className="text-[11px] text-slate-500 font-mono">
-            Vehicle: {selectedVehicleId}
+          <span className="text-[11px] text-cyan-400/70 font-mono">
+            Vehicle: <strong className="text-white">{selectedVehicleId}</strong>
           </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-slate-400">Investigation Status</label>
+            <label className="text-[11px] font-medium text-cyan-300">Investigation Status</label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as InvestigationStatus)}
-              className="w-full bg-[#090d16] border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-slate-700"
+              className="w-full bg-[#020509] border border-cyan-950/80 rounded-xl p-2.5 text-xs text-cyan-100 focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_12px_rgba(0,245,255,0.2)] transition-all cursor-pointer"
             >
-              <option value="pending">Pending Review (Yellow Alert)</option>
-              <option value="in_progress">In Progress (Active Testing)</option>
-              <option value="flagged_critical">Flagged Critical (Red Flag Stop-Charge)</option>
-              <option value="resolved">Resolved (Cleared for Service)</option>
+              <option value="pending" className="bg-[#04080e] text-cyan-200">Pending Review (Yellow Alert)</option>
+              <option value="in_progress" className="bg-[#04080e] text-cyan-200">In Progress (Active Testing)</option>
+              <option value="flagged_critical" className="bg-[#04080e] text-cyan-200">Flagged Critical (Red Flag Stop-Charge)</option>
+              <option value="resolved" className="bg-[#04080e] text-cyan-200">Resolved (Cleared for Service)</option>
             </select>
           </div>
 
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-slate-400">Root Cause Classification</label>
+            <label className="text-[11px] font-medium text-cyan-300">Root Cause Classification</label>
             <select
               value={rootCause}
               onChange={(e) => setRootCause(e.target.value as RootCauseCategory)}
-              className="w-full bg-[#090d16] border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-slate-700"
+              className="w-full bg-[#020509] border border-cyan-950/80 rounded-xl p-2.5 text-xs text-cyan-100 focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_12px_rgba(0,245,255,0.2)] transition-all cursor-pointer"
             >
-              <option value="unspecified">Unspecified / Triage</option>
-              <option value="thermal_excursion">Thermal Excursion (&gt;Threshold Limit)</option>
-              <option value="cell_voltage_sag">Cell Undervoltage / Sag</option>
-              <option value="overcurrent_spike">Overcurrent Inrush / Spike</option>
-              <option value="sensor_drift">Thermistor / Sensor Drift</option>
-              <option value="data_dropout">CAN Bus Telemetry Dropout</option>
-              <option value="normal_operation">Normal Nominal Cycle</option>
+              <option value="unspecified" className="bg-[#04080e] text-cyan-200">Unspecified / Triage</option>
+              <option value="thermal_excursion" className="bg-[#04080e] text-cyan-200">Thermal Excursion (&gt;Threshold Limit)</option>
+              <option value="cell_voltage_sag" className="bg-[#04080e] text-cyan-200">Cell Undervoltage / Sag</option>
+              <option value="overcurrent_spike" className="bg-[#04080e] text-cyan-200">Overcurrent Inrush / Spike</option>
+              <option value="sensor_drift" className="bg-[#04080e] text-cyan-200">Thermistor / Sensor Drift</option>
+              <option value="data_dropout" className="bg-[#04080e] text-cyan-200">CAN Bus Telemetry Dropout</option>
+              <option value="normal_operation" className="bg-[#04080e] text-cyan-200">Normal Nominal Cycle</option>
             </select>
           </div>
         </div>
 
         <div className="space-y-1">
-          <label className="text-[11px] font-medium text-slate-400">Engineering Notes &amp; Actions Taken</label>
+          <label className="text-[11px] font-medium text-cyan-300">Engineering Notes &amp; Actions Taken</label>
           <textarea
             value={engineerNotes}
             onChange={(e) => setEngineerNotes(e.target.value)}
             rows={3}
             placeholder="Document observations regarding temperature elevation, charging current taper, or sensor discrepancy..."
-            className="w-full bg-[#090d16] border border-slate-800 rounded-lg p-2.5 text-xs text-slate-200 font-sans focus:outline-none focus:border-slate-700"
+            className="w-full bg-[#020509] border border-cyan-950/80 rounded-xl p-3 text-xs text-cyan-100 placeholder-cyan-900 focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_12px_rgba(0,245,255,0.2)] transition-all"
           />
         </div>
 
@@ -313,21 +313,21 @@ export const InvestigationPanel: React.FC<InvestigationPanelProps> = ({
           <button
             onClick={handleSaveInvestigation}
             disabled={isSavingInvestigation}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-cyan-950/70 hover:bg-cyan-900 text-cyan-200 border border-cyan-500/50 hover:border-cyan-300 hover:shadow-[0_0_15px_rgba(0,245,255,0.3)] transition-all duration-200 disabled:opacity-50 active:scale-95"
           >
             {isSavingInvestigation ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-400" />
                 <span>Saving Log...</span>
               </>
             ) : investigationSaved ? (
               <>
-                <FileCheck className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-emerald-400">Diagnostic Saved</span>
+                <FileCheck className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="text-cyan-300">Diagnostic Saved</span>
               </>
             ) : (
               <>
-                <Save className="w-3.5 h-3.5 text-slate-400" />
+                <Save className="w-3.5 h-3.5 text-cyan-400" />
                 <span>Save Diagnostic Report</span>
               </>
             )}

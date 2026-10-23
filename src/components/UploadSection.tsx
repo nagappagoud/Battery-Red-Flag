@@ -13,6 +13,7 @@ import {
   AlertCircle,
   FileCheck,
   ChevronRight,
+  Sparkles,
 } from 'lucide-react';
 import { SAMPLE_DATASETS, downloadCsvFile, SAMPLE_STANDARD_CYCLE } from '../utils/sampleData';
 import { DataSourceType } from '../types/bms';
@@ -27,7 +28,6 @@ interface UploadSectionProps {
   currentLoadedSource?: string;
   hasData: boolean;
 }
-
 
 export const UploadSection: React.FC<UploadSectionProps> = ({
   onDataLoaded,
@@ -88,41 +88,40 @@ export const UploadSection: React.FC<UploadSectionProps> = ({
     onDataLoaded(manualText, 'Manual Entry Records', 'manual_entry', false);
   };
 
-
   const handleDownloadSampleCsv = () => {
     downloadCsvFile(SAMPLE_STANDARD_CYCLE.trim(), 'sample_bms_telemetry.csv');
   };
 
   return (
-    <div className="bg-[#0e131d] border border-slate-800/80 rounded-xl p-5 shadow-sm space-y-5">
+    <div className="cockpit-panel p-5 sm:p-6 space-y-5">
       {/* Top Header & Mode Tabs */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-cyan-950/60 pb-3">
         <div>
-          <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
-            <Upload className="w-4 h-4 text-slate-400" />
-            <span>Telemetry Ingestion</span>
+          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+            <Upload className="w-4 h-4 text-cyan-400" />
+            <span>Upload Battery Telemetry</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Accepts CSV telemetry with timestamp, vehicle_id, voltage_v, current_a, temperature_c, soc_pct, mode
+          <p className="text-[11px] text-cyan-300/70 mt-0.5 font-mono">
+            Format: timestamp, vehicle_id, voltage_v, current_a, temperature_c, soc_pct, mode
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={handleDownloadSampleCsv}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/70 hover:bg-slate-700/70 border border-slate-700/60 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-cyan-200/80 hover:text-white bg-[#050c14] hover:bg-[#091724] border border-cyan-900/50 hover:border-cyan-400/80 rounded-lg transition-all duration-200 active:scale-95"
           >
-            <Download className="w-3.5 h-3.5 text-slate-400" />
+            <Download className="w-3.5 h-3.5 text-cyan-400" />
             <span>Download CSV Template</span>
           </button>
 
-          <div className="bg-slate-900 p-0.5 rounded-lg border border-slate-800 flex items-center text-xs">
+          <div className="bg-[#03060a] p-0.5 rounded-lg border border-cyan-950/80 flex items-center text-xs">
             <button
               onClick={() => setActiveTab('upload')}
               className={`px-3 py-1 rounded-md font-medium transition-all ${
                 activeTab === 'upload'
-                  ? 'bg-slate-800 text-slate-100 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-cyan-950/70 text-cyan-200 border border-cyan-500/40 shadow-[0_0_12px_rgba(0,245,255,0.2)]'
+                  : 'text-cyan-400/60 hover:text-cyan-200'
               }`}
             >
               File Upload
@@ -131,8 +130,8 @@ export const UploadSection: React.FC<UploadSectionProps> = ({
               onClick={() => setActiveTab('manual')}
               className={`px-3 py-1 rounded-md font-medium transition-all ${
                 activeTab === 'manual'
-                  ? 'bg-slate-800 text-slate-100 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-cyan-950/70 text-cyan-200 border border-cyan-500/40 shadow-[0_0_12px_rgba(0,245,255,0.2)]'
+                  : 'text-cyan-400/60 hover:text-cyan-200'
               }`}
             >
               Manual Editor
@@ -143,8 +142,8 @@ export const UploadSection: React.FC<UploadSectionProps> = ({
 
       {/* Error notification if any */}
       {errorMessage && (
-        <div className="p-3 bg-rose-950/30 border border-rose-800/40 rounded-lg text-rose-300 text-xs flex items-center gap-2.5">
-          <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+        <div className="p-3 bg-red-950/40 border border-red-500/40 rounded-lg text-red-200 text-xs flex items-center gap-2.5">
+          <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
           <span>{errorMessage}</span>
         </div>
       )}
@@ -157,10 +156,8 @@ export const UploadSection: React.FC<UploadSectionProps> = ({
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
-            className={`border border-dashed rounded-xl p-8 sm:p-10 text-center cursor-pointer transition-all ${
-              isDragging
-                ? 'border-slate-500 bg-slate-800/40'
-                : 'border-slate-700/60 hover:border-slate-600 bg-slate-900/30 hover:bg-slate-900/60'
+            className={`upload-neon-zone rounded-xl p-8 sm:p-11 text-center cursor-pointer relative overflow-hidden group ${
+              isDragging ? 'is-dragging' : ''
             }`}
           >
             <input
@@ -174,26 +171,30 @@ export const UploadSection: React.FC<UploadSectionProps> = ({
                 }
               }}
             />
-            <div className="flex flex-col items-center justify-center space-y-2">
-              <div className="p-2.5 bg-slate-800/80 text-slate-300 rounded-lg border border-slate-700/50">
-                <FileText className="w-5 h-5" />
+
+            {/* Glowing sweep overlay line on hover */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+
+            <div className="flex flex-col items-center justify-center space-y-2.5 relative z-10">
+              <div className="p-3 bg-cyan-950/40 text-cyan-400 rounded-xl border border-cyan-500/30 group-hover:border-cyan-400 group-hover:shadow-[0_0_20px_rgba(0,245,255,0.35)] transition-all duration-300 group-hover:scale-105">
+                <FileText className="w-6 h-6 text-cyan-300" />
               </div>
-              <div className="text-xs sm:text-sm text-slate-200 font-medium pt-1">
-                Drop telemetry CSV here, or <span className="text-slate-300 underline underline-offset-4 hover:text-white">select file from disk</span>
+              <div className="text-xs sm:text-sm text-cyan-100 font-medium">
+                Drop telemetry CSV here, or <span className="text-cyan-400 underline underline-offset-4 hover:text-white transition-colors">browse file</span>
               </div>
-              <p className="text-[11px] text-slate-500 max-w-md font-mono">
-                timestamp, vehicle_id, voltage_v, current_a, temperature_c, soc_pct, mode
+              <p className="text-[11px] text-cyan-400/60 font-mono">
+                Supports standard BMS logs (.csv, .txt) with UTC or ISO-8601 timestamps
               </p>
             </div>
           </div>
 
           {currentLoadedSource && (
-            <div className="flex items-center justify-between text-xs px-3.5 py-2.5 bg-slate-900/70 border border-slate-800 rounded-lg text-slate-300">
+            <div className="flex items-center justify-between text-xs px-3.5 py-2.5 bg-[#03070d] border border-cyan-900/50 rounded-lg text-cyan-200">
               <div className="flex items-center gap-2">
-                <FileCheck className="w-4 h-4 text-emerald-400" />
-                <span>Active Dataset: <strong className="text-slate-100">{currentLoadedSource}</strong></span>
+                <FileCheck className="w-4 h-4 text-cyan-400" />
+                <span>Active Dataset: <strong className="text-white">{currentLoadedSource}</strong></span>
               </div>
-              <span className="text-[11px] font-mono text-slate-400">Validated</span>
+              <span className="text-[11px] font-mono text-cyan-400">Telemetry Loaded</span>
             </div>
           )}
         </div>
@@ -203,8 +204,8 @@ export const UploadSection: React.FC<UploadSectionProps> = ({
       {activeTab === 'manual' && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-300 font-medium flex items-center gap-1.5">
-              <Edit3 className="w-3.5 h-3.5 text-slate-400" />
+            <span className="text-xs text-cyan-300 font-medium flex items-center gap-1.5">
+              <Edit3 className="w-3.5 h-3.5 text-cyan-400" />
               Direct CSV Input
             </span>
             <button
@@ -218,7 +219,7 @@ export const UploadSection: React.FC<UploadSectionProps> = ({
                     `2026-10-22T14:08:00Z,CAR-01,391.0,0.0,26.8,77.5,idle`
                 );
               }}
-              className="text-xs text-slate-400 hover:text-slate-200 underline"
+              className="text-xs text-cyan-400/80 hover:text-cyan-200 underline transition-colors"
             >
               Insert example rows
             </button>
@@ -228,14 +229,14 @@ export const UploadSection: React.FC<UploadSectionProps> = ({
             onChange={(e) => setManualText(e.target.value)}
             placeholder={`timestamp,vehicle_id,voltage_v,current_a,temperature_c,soc_pct,mode\n2026-10-22T10:00:00Z,EV-01,395.2,-42.0,25.0,80.0,driving`}
             rows={6}
-            className="w-full bg-[#090d16] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 focus:outline-none focus:border-slate-600"
+            className="w-full bg-[#020509] border border-cyan-900/50 rounded-lg p-3 font-mono text-xs text-cyan-100 placeholder-cyan-900/60 focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_15px_rgba(0,245,255,0.25)] transition-all"
           />
           <div className="flex justify-end">
             <button
               onClick={handleManualSubmit}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-medium border border-slate-700/80 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-lg text-xs border border-cyan-300 shadow-[0_0_18px_rgba(0,245,255,0.3)] hover:shadow-[0_0_26px_rgba(0,245,255,0.5)] transition-all duration-200 active:scale-95"
             >
-              <Play className="w-3.5 h-3.5" />
+              <Play className="w-3.5 h-3.5 fill-black" />
               Parse &amp; Analyze
             </button>
           </div>
@@ -243,12 +244,12 @@ export const UploadSection: React.FC<UploadSectionProps> = ({
       )}
 
       {/* Preset Demonstrations */}
-      <div className="pt-2 border-t border-slate-800/60">
+      <div className="pt-3 border-t border-cyan-950/60">
         <div className="flex items-center justify-between mb-2.5">
-          <span className="text-xs font-medium text-slate-400">
+          <span className="text-xs font-medium text-cyan-300">
             Reference Test Datasets:
           </span>
-          <span className="text-[11px] text-slate-500">Select to evaluate parsing &amp; analytics</span>
+          <span className="text-[11px] text-cyan-400/60 font-mono">Click to inspect in oscilloscope</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -256,21 +257,20 @@ export const UploadSection: React.FC<UploadSectionProps> = ({
             <button
               key={sample.id}
               onClick={() => onDataLoaded(sample.csvContent, sample.title, 'reference_sample', true)}
-              className="text-left p-3.5 rounded-lg border border-slate-800/80 bg-slate-900/40 hover:bg-slate-800/50 hover:border-slate-700 transition-all group flex flex-col justify-between"
+              className="text-left p-4 rounded-xl border border-cyan-900/40 bg-[#03080e]/70 hover:bg-[#06121d] hover:border-cyan-400/70 hover:shadow-[0_0_20px_rgba(0,245,255,0.2)] transition-all duration-200 group flex flex-col justify-between active:scale-[0.98]"
             >
-
               <div>
-                <div className="flex items-center justify-between gap-2 mb-1">
-                  <span className="text-xs font-semibold text-slate-200 group-hover:text-white transition-colors">
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <span className="text-xs font-semibold text-white group-hover:text-cyan-300 transition-colors">
                     {sample.title}
                   </span>
-                  <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300 transition-colors shrink-0" />
+                  <ChevronRight className="w-3.5 h-3.5 text-cyan-600 group-hover:text-cyan-300 group-hover:translate-x-0.5 transition-all shrink-0" />
                 </div>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
+                <p className="text-[11px] text-cyan-200/60 leading-relaxed">
                   {sample.description}
                 </p>
               </div>
-              <div className="pt-2 mt-2 border-t border-slate-800/60 text-[10px] font-mono text-slate-500">
+              <div className="pt-2 mt-2.5 border-t border-cyan-950/60 text-[10px] font-mono text-cyan-400/80">
                 {sample.badge}
               </div>
             </button>

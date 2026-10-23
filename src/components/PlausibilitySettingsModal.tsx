@@ -42,177 +42,177 @@ export const PlausibilitySettingsModal: React.FC<PlausibilitySettingsModalProps>
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="bg-[#0e131d] border border-slate-800 rounded-xl max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-150">
+      <div className="bg-[#03070d] border border-cyan-500/40 rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-[0_0_50px_rgba(0,245,255,0.2)] flex flex-col">
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/60 sticky top-0 z-10 backdrop-blur">
+        <div className="flex items-center justify-between p-4 border-b border-cyan-950/80 bg-[#020509]/90 sticky top-0 z-10 backdrop-blur">
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 bg-slate-800 text-slate-300 rounded-lg">
+            <div className="p-2 bg-cyan-950/60 text-cyan-400 border border-cyan-500/40 rounded-xl shadow-[0_0_12px_rgba(0,245,255,0.25)]">
               <Sliders className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-slate-100">Screening Plausibility Thresholds</h2>
-              <p className="text-[11px] text-slate-400">Configure data-quality boundary filters</p>
+              <h2 className="text-sm font-semibold text-white">Screening Plausibility Thresholds</h2>
+              <p className="text-[11px] text-cyan-400/70">Configure physical boundary filters &amp; triggers</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-1.5 text-cyan-400/60 hover:text-white hover:bg-cyan-950/50 rounded-lg transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Informational callout */}
-        <div className="p-5 space-y-4 text-xs text-slate-300">
-          <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg flex items-start gap-2.5 text-slate-400 leading-relaxed text-[11px]">
-            <Info className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+        <div className="p-5 space-y-4 text-xs text-cyan-100">
+          <div className="p-3 bg-[#020509] border border-cyan-950/80 rounded-xl flex items-start gap-2.5 text-cyan-300/80 leading-relaxed text-[11px]">
+            <Info className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
             <div>
-              <strong>Screening Defaults:</strong> These bounds represent screening limits for detecting corrupt sensors or truncated packets. They are not universal standards or battery safety trip points.
+              <strong className="text-white">Screening Defaults:</strong> These bounds represent screening limits for detecting corrupt telemetry or truncated packets. They are not universal standards or battery safety trip points.
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             {/* Voltage */}
-            <div className="space-y-1.5 p-3 bg-slate-900/40 rounded-lg border border-slate-800/80">
-              <label className="font-medium text-slate-200 block text-xs">Voltage Range (V)</label>
+            <div className="space-y-1.5 p-3.5 bg-[#020509] rounded-xl border border-cyan-950/80">
+              <label className="font-semibold text-white block text-xs">Voltage Range (V)</label>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <span className="text-[10px] text-slate-500 block mb-1">Min (V)</span>
+                  <span className="text-[10px] text-cyan-400/60 block mb-1">Min (V)</span>
                   <input
                     type="number"
                     value={form.voltageMin}
                     onChange={(e) => handleChange('voltageMin', e.target.value)}
-                    className="w-full bg-[#080c14] border border-slate-800 rounded-md px-2.5 py-1.5 font-mono text-xs text-slate-100 focus:outline-none focus:border-slate-600"
+                    className="w-full bg-[#04080e] border border-cyan-950 rounded-lg px-2.5 py-1.5 font-mono text-xs text-white focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_10px_rgba(0,245,255,0.25)]"
                   />
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-500 block mb-1">Max (V)</span>
+                  <span className="text-[10px] text-cyan-400/60 block mb-1">Max (V)</span>
                   <input
                     type="number"
                     value={form.voltageMax}
                     onChange={(e) => handleChange('voltageMax', e.target.value)}
-                    className="w-full bg-[#080c14] border border-slate-800 rounded-md px-2.5 py-1.5 font-mono text-xs text-slate-100 focus:outline-none focus:border-slate-600"
+                    className="w-full bg-[#04080e] border border-cyan-950 rounded-lg px-2.5 py-1.5 font-mono text-xs text-white focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_10px_rgba(0,245,255,0.25)]"
                   />
                 </div>
               </div>
             </div>
 
             {/* Current */}
-            <div className="space-y-1.5 p-3 bg-slate-900/40 rounded-lg border border-slate-800/80">
-              <label className="font-medium text-slate-200 block text-xs">Current Range (A)</label>
+            <div className="space-y-1.5 p-3.5 bg-[#020509] rounded-xl border border-cyan-950/80">
+              <label className="font-semibold text-white block text-xs">Current Range (A)</label>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <span className="text-[10px] text-slate-500 block mb-1">Min (Discharge)</span>
+                  <span className="text-[10px] text-cyan-400/60 block mb-1">Min (Discharge)</span>
                   <input
                     type="number"
                     value={form.currentMin}
                     onChange={(e) => handleChange('currentMin', e.target.value)}
-                    className="w-full bg-[#080c14] border border-slate-800 rounded-md px-2.5 py-1.5 font-mono text-xs text-slate-100 focus:outline-none focus:border-slate-600"
+                    className="w-full bg-[#04080e] border border-cyan-950 rounded-lg px-2.5 py-1.5 font-mono text-xs text-white focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_10px_rgba(0,245,255,0.25)]"
                   />
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-500 block mb-1">Max (Charge)</span>
+                  <span className="text-[10px] text-cyan-400/60 block mb-1">Max (Charge)</span>
                   <input
                     type="number"
                     value={form.currentMax}
                     onChange={(e) => handleChange('currentMax', e.target.value)}
-                    className="w-full bg-[#080c14] border border-slate-800 rounded-md px-2.5 py-1.5 font-mono text-xs text-slate-100 focus:outline-none focus:border-slate-600"
+                    className="w-full bg-[#04080e] border border-cyan-950 rounded-lg px-2.5 py-1.5 font-mono text-xs text-white focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_10px_rgba(0,245,255,0.25)]"
                   />
                 </div>
               </div>
             </div>
 
             {/* Temperature */}
-            <div className="space-y-1.5 p-3 bg-slate-900/40 rounded-lg border border-slate-800/80">
-              <label className="font-medium text-slate-200 block text-xs">Temperature Plausibility (°C)</label>
+            <div className="space-y-1.5 p-3.5 bg-[#020509] rounded-xl border border-cyan-950/80">
+              <label className="font-semibold text-white block text-xs">Temperature Plausibility (°C)</label>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <span className="text-[10px] text-slate-500 block mb-1">Min (°C)</span>
+                  <span className="text-[10px] text-cyan-400/60 block mb-1">Min (°C)</span>
                   <input
                     type="number"
                     value={form.temperatureMin}
                     onChange={(e) => handleChange('temperatureMin', e.target.value)}
-                    className="w-full bg-[#080c14] border border-slate-800 rounded-md px-2.5 py-1.5 font-mono text-xs text-slate-100 focus:outline-none focus:border-slate-600"
+                    className="w-full bg-[#04080e] border border-cyan-950 rounded-lg px-2.5 py-1.5 font-mono text-xs text-white focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_10px_rgba(0,245,255,0.25)]"
                   />
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-500 block mb-1">Max (°C)</span>
+                  <span className="text-[10px] text-cyan-400/60 block mb-1">Max (°C)</span>
                   <input
                     type="number"
                     value={form.temperatureMax}
                     onChange={(e) => handleChange('temperatureMax', e.target.value)}
-                    className="w-full bg-[#080c14] border border-slate-800 rounded-md px-2.5 py-1.5 font-mono text-xs text-slate-100 focus:outline-none focus:border-slate-600"
+                    className="w-full bg-[#04080e] border border-cyan-950 rounded-lg px-2.5 py-1.5 font-mono text-xs text-white focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_10px_rgba(0,245,255,0.25)]"
                   />
                 </div>
               </div>
             </div>
 
             {/* SoC Range */}
-            <div className="space-y-1.5 p-3 bg-slate-900/40 rounded-lg border border-slate-800/80">
-              <label className="font-medium text-slate-200 block text-xs">State of Charge Range (%)</label>
+            <div className="space-y-1.5 p-3.5 bg-[#020509] rounded-xl border border-cyan-950/80">
+              <label className="font-semibold text-white block text-xs">State of Charge Range (%)</label>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <span className="text-[10px] text-slate-500 block mb-1">Min (%)</span>
+                  <span className="text-[10px] text-cyan-400/60 block mb-1">Min (%)</span>
                   <input
                     type="number"
                     value={form.socMin}
                     onChange={(e) => handleChange('socMin', e.target.value)}
-                    className="w-full bg-[#080c14] border border-slate-800 rounded-md px-2.5 py-1.5 font-mono text-xs text-slate-100 focus:outline-none focus:border-slate-600"
+                    className="w-full bg-[#04080e] border border-cyan-950 rounded-lg px-2.5 py-1.5 font-mono text-xs text-white focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_10px_rgba(0,245,255,0.25)]"
                   />
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-500 block mb-1">Max (%)</span>
+                  <span className="text-[10px] text-cyan-400/60 block mb-1">Max (%)</span>
                   <input
                     type="number"
                     value={form.socMax}
                     onChange={(e) => handleChange('socMax', e.target.value)}
-                    className="w-full bg-[#080c14] border border-slate-800 rounded-md px-2.5 py-1.5 font-mono text-xs text-slate-100 focus:outline-none focus:border-slate-600"
+                    className="w-full bg-[#04080e] border border-cyan-950 rounded-lg px-2.5 py-1.5 font-mono text-xs text-white focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_10px_rgba(0,245,255,0.25)]"
                   />
                 </div>
               </div>
             </div>
 
             {/* Temperature Exposure Metric Threshold */}
-            <div className="space-y-1.5 p-3 bg-slate-900/40 rounded-lg border border-slate-800/80">
-              <label className="font-medium text-slate-200 block text-xs">
+            <div className="space-y-1.5 p-3.5 bg-[#020509] rounded-xl border border-cyan-950/80">
+              <label className="font-semibold text-white block text-xs">
                 Thermal Exposure Baseline (°C)
               </label>
-              <span className="text-[10px] text-slate-500 block">
+              <span className="text-[10px] text-cyan-400/60 block">
                 Calculates cumulative duration &gt; this threshold
               </span>
               <input
                 type="number"
                 value={form.tempAlertThreshold}
                 onChange={(e) => handleChange('tempAlertThreshold', e.target.value)}
-                className="w-full bg-[#080c14] border border-slate-800 rounded-md px-2.5 py-1.5 font-mono text-xs text-slate-100 focus:outline-none focus:border-slate-600"
+                className="w-full bg-[#04080e] border border-cyan-950 rounded-lg px-2.5 py-1.5 font-mono text-xs text-white focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_10px_rgba(0,245,255,0.25)]"
               />
             </div>
 
             {/* Session Segmentation Idle Gap */}
-            <div className="space-y-1.5 p-3 bg-slate-900/40 rounded-lg border border-slate-800/80">
-              <label className="font-medium text-slate-200 block text-xs">
+            <div className="space-y-1.5 p-3.5 bg-[#020509] rounded-xl border border-cyan-950/80">
+              <label className="font-semibold text-white block text-xs">
                 Inactivity Split Window (minutes)
               </label>
-              <span className="text-[10px] text-slate-500 block">
+              <span className="text-[10px] text-cyan-400/60 block">
                 Segments trips if idle gap exceeds this limit
               </span>
               <input
                 type="number"
                 value={form.idleSessionGapMinutes}
                 onChange={(e) => handleChange('idleSessionGapMinutes', e.target.value)}
-                className="w-full bg-[#080c14] border border-slate-800 rounded-md px-2.5 py-1.5 font-mono text-xs text-slate-100 focus:outline-none focus:border-slate-600"
+                className="w-full bg-[#04080e] border border-cyan-950 rounded-lg px-2.5 py-1.5 font-mono text-xs text-white focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_10px_rgba(0,245,255,0.25)]"
               />
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-800 bg-slate-900/50 flex items-center justify-between mt-auto">
+        <div className="p-4 border-t border-cyan-950/80 bg-[#020509] flex items-center justify-between mt-auto">
           <button
             type="button"
             onClick={handleReset}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-cyan-400 hover:text-white transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             Reset to Defaults
@@ -221,14 +221,14 @@ export const PlausibilitySettingsModal: React.FC<PlausibilitySettingsModalProps>
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-1.5 text-xs text-slate-400 hover:text-slate-200 transition-colors"
+              className="px-3.5 py-1.5 text-xs text-cyan-400/70 hover:text-white transition-colors"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={handleSave}
-              className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium bg-slate-200 hover:bg-white text-slate-900 rounded-md transition-colors"
+              className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-black rounded-lg transition-all duration-200 shadow-[0_0_14px_rgba(0,245,255,0.3)] active:scale-95"
             >
               <Check className="w-3.5 h-3.5" />
               Apply Limits

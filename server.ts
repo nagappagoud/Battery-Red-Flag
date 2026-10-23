@@ -65,8 +65,9 @@ function resolveDistPath(): string {
 
 async function startServer() {
   const app = express();
-  const PORT = Number(process.env.PORT) || 3000;
+  const PORT = Number(process.env.DEFAULT_APP_PORT) || 3000;
   const isProd = process.env.NODE_ENV === 'production';
+
 
   // Request parsing middlewares
   app.use(express.json({ limit: '50mb' }));

@@ -49,22 +49,22 @@ export const DataPreviewTable: React.FC<DataPreviewTableProps> = ({ records }) =
   };
 
   return (
-    <div className="bg-[#0e131d] border border-slate-800/80 rounded-xl p-5 shadow-sm space-y-4">
+    <div className="cockpit-panel p-5 sm:p-6 space-y-4">
       {/* Header & Filter Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-cyan-950/60 pb-4">
         <div>
-          <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
-            <Table className="w-4 h-4 text-slate-400" />
+          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+            <Table className="w-4 h-4 text-cyan-400" />
             <span>Telemetry Records Table</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-cyan-200/70 mt-0.5">
             Individual inspection of {records.length} parsed records. Cells violating screening bounds or format rules are annotated.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           {/* Checkbox to filter issues only */}
-          <label className="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer bg-slate-900 px-2.5 py-1.5 rounded-md border border-slate-800">
+          <label className="flex items-center gap-1.5 text-xs text-cyan-200 cursor-pointer bg-[#020509] px-2.5 py-1.5 rounded-lg border border-cyan-950/80 hover:border-cyan-500/50 transition-colors">
             <input
               type="checkbox"
               checked={onlyIssues}
@@ -72,14 +72,14 @@ export const DataPreviewTable: React.FC<DataPreviewTableProps> = ({ records }) =
                 setOnlyIssues(e.target.checked);
                 setCurrentPage(1);
               }}
-              className="rounded bg-slate-950 border-slate-700 text-slate-400 focus:ring-0"
+              className="rounded bg-[#04080e] border-cyan-800 text-cyan-400 focus:ring-0 accent-cyan-400"
             />
             <span>Flagged rows only</span>
           </label>
 
           {/* Search box */}
           <div className="relative flex-1 sm:w-48">
-            <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-3.5 h-3.5 text-cyan-500/70 absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Filter records..."
@@ -88,29 +88,29 @@ export const DataPreviewTable: React.FC<DataPreviewTableProps> = ({ records }) =
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full bg-slate-950 border border-slate-800 rounded-md pl-8 pr-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-slate-700 font-mono"
+              className="w-full bg-[#020509] border border-cyan-950/80 rounded-lg pl-8 pr-2.5 py-1.5 text-xs text-cyan-100 placeholder-cyan-900 focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_12px_rgba(0,245,255,0.25)] transition-all font-mono"
             />
           </div>
         </div>
       </div>
 
       {/* Table view */}
-      <div className="border border-slate-800/80 rounded-lg overflow-hidden overflow-x-auto">
+      <div className="border border-cyan-950/80 rounded-xl overflow-hidden overflow-x-auto bg-[#020509]">
         <table className="w-full text-left text-xs">
-          <thead className="bg-slate-900 text-slate-400 border-b border-slate-800 text-[11px] font-mono">
+          <thead className="bg-[#040912] text-cyan-400 border-b border-cyan-950/80 text-[11px] font-mono">
             <tr>
-              <th className="py-2.5 px-3 font-medium w-14">Row</th>
-              <th className="py-2.5 px-3 font-medium">Timestamp</th>
-              <th className="py-2.5 px-3 font-medium">Vehicle ID</th>
-              <th className="py-2.5 px-3 font-medium">Voltage (V)</th>
-              <th className="py-2.5 px-3 font-medium">Current (A)</th>
-              <th className="py-2.5 px-3 font-medium">Temp (°C)</th>
-              <th className="py-2.5 px-3 font-medium">SoC (%)</th>
-              <th className="py-2.5 px-3 font-medium">Mode</th>
-              <th className="py-2.5 px-3 font-medium">Audit Notes</th>
+              <th className="py-2.5 px-3 font-semibold w-14">Row</th>
+              <th className="py-2.5 px-3 font-semibold">Timestamp</th>
+              <th className="py-2.5 px-3 font-semibold">Vehicle ID</th>
+              <th className="py-2.5 px-3 font-semibold">Voltage (V)</th>
+              <th className="py-2.5 px-3 font-semibold">Current (A)</th>
+              <th className="py-2.5 px-3 font-semibold">Temp (°C)</th>
+              <th className="py-2.5 px-3 font-semibold">SoC (%)</th>
+              <th className="py-2.5 px-3 font-semibold">Mode</th>
+              <th className="py-2.5 px-3 font-semibold">Audit Notes</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/60 font-mono text-xs">
+          <tbody className="divide-y divide-cyan-950/40 font-mono text-xs">
             {paginated.length > 0 ? (
               paginated.map((r) => {
                 const tsIssue = getCellIssue(r, 'timestamp');
@@ -122,71 +122,71 @@ export const DataPreviewTable: React.FC<DataPreviewTableProps> = ({ records }) =
                 return (
                   <tr
                     key={r.rowNumber}
-                    className={`hover:bg-slate-800/20 transition-colors ${
-                      r.issues.length > 0 ? 'bg-slate-900/30' : ''
+                    className={`hover:bg-cyan-950/25 transition-colors ${
+                      r.issues.length > 0 ? 'bg-cyan-950/10' : ''
                     }`}
                   >
-                    <td className="py-2 px-3 text-slate-500 tabular-nums">#{r.rowNumber}</td>
+                    <td className="py-2 px-3 text-cyan-400/70 tabular-nums">#{r.rowNumber}</td>
                     <td
                       className={`py-2 px-3 truncate max-w-[150px] ${
-                        tsIssue ? 'text-amber-300 font-medium' : 'text-slate-300'
+                        tsIssue ? 'text-cyan-300 font-bold bg-cyan-950/40' : 'text-cyan-200/80'
                       }`}
                       title={tsIssue?.message}
                     >
                       {r.timestamp}
                     </td>
-                    <td className="py-2 px-3 text-slate-300">{r.vehicle_id}</td>
+                    <td className="py-2 px-3 text-white font-medium">{r.vehicle_id}</td>
                     <td
                       className={`py-2 px-3 tabular-nums ${
-                        vIssue ? 'text-amber-300 font-medium' : 'text-slate-200'
+                        vIssue ? 'text-cyan-300 font-bold bg-cyan-950/40' : 'text-cyan-100'
                       }`}
                       title={vIssue?.message}
                     >
-                      {r.voltage_v !== null ? `${r.voltage_v} V` : <span className="text-slate-500 italic">null</span>}
+                      {r.voltage_v !== null ? `${r.voltage_v} V` : <span className="text-cyan-600 italic">null</span>}
                     </td>
                     <td
                       className={`py-2 px-3 tabular-nums ${
-                        iIssue ? 'text-amber-300 font-medium' : 'text-slate-200'
+                        iIssue ? 'text-cyan-300 font-bold bg-cyan-950/40' : 'text-cyan-100'
                       }`}
                       title={iIssue?.message}
                     >
-                      {r.current_a !== null ? `${r.current_a} A` : <span className="text-slate-500 italic">null</span>}
+                      {r.current_a !== null ? `${r.current_a} A` : <span className="text-cyan-600 italic">null</span>}
                     </td>
                     <td
                       className={`py-2 px-3 tabular-nums ${
-                        tIssue ? 'text-amber-300 font-medium' : 'text-slate-200'
+                        tIssue ? 'text-cyan-300 font-bold bg-cyan-950/40' : 'text-cyan-100'
                       }`}
                       title={tIssue?.message}
                     >
-                      {r.temperature_c !== null ? `${r.temperature_c} °C` : <span className="text-slate-500 italic">null</span>}
+                      {r.temperature_c !== null ? `${r.temperature_c} °C` : <span className="text-cyan-600 italic">null</span>}
                     </td>
                     <td
                       className={`py-2 px-3 tabular-nums ${
-                        socIssue ? 'text-amber-300 font-medium' : 'text-slate-200'
+                        socIssue ? 'text-cyan-300 font-bold bg-cyan-950/40' : 'text-cyan-100'
                       }`}
                       title={socIssue?.message}
                     >
-                      {r.soc_pct !== null ? `${r.soc_pct} %` : <span className="text-slate-500 italic">null</span>}
+                      {r.soc_pct !== null ? `${r.soc_pct} %` : <span className="text-cyan-600 italic">null</span>}
                     </td>
                     <td className="py-2 px-3">
-                      <span className="text-[10px] font-mono uppercase text-slate-400">
+                      <span className="text-[10px] font-mono uppercase text-cyan-400 bg-cyan-950/50 px-1.5 py-0.5 rounded border border-cyan-900/60">
                         {r.mode}
                       </span>
                     </td>
                     <td className="py-2 px-3">
                       {r.issues.length === 0 ? (
-                        <span className="flex items-center gap-1 text-[11px] text-slate-500 font-sans">
-                          <Check className="w-3 h-3 text-slate-500" /> Pass
+                        <span className="flex items-center gap-1 text-[11px] text-cyan-400/80 font-sans">
+                          <Check className="w-3 h-3 text-cyan-400" /> Pass
                         </span>
                       ) : (
                         <div className="flex flex-col gap-0.5">
                           {r.issues.map((iss, i) => (
                             <span
                               key={i}
-                              className="text-[10px] text-amber-300/90 flex items-center gap-1 font-sans"
+                              className="text-[10px] text-cyan-300 flex items-center gap-1 font-sans"
                               title={iss.message}
                             >
-                              <AlertTriangle className="w-2.5 h-2.5 shrink-0 text-amber-400" />
+                              <AlertTriangle className="w-2.5 h-2.5 shrink-0 text-cyan-400" />
                               <span className="truncate max-w-[130px]">{iss.message}</span>
                             </span>
                           ))}
@@ -198,7 +198,7 @@ export const DataPreviewTable: React.FC<DataPreviewTableProps> = ({ records }) =
               })
             ) : (
               <tr>
-                <td colSpan={9} className="py-8 text-center text-slate-500 font-sans">
+                <td colSpan={9} className="py-8 text-center text-cyan-400/60 font-sans">
                   No records match the current filter.
                 </td>
               </tr>
@@ -208,7 +208,7 @@ export const DataPreviewTable: React.FC<DataPreviewTableProps> = ({ records }) =
       </div>
 
       {/* Pagination controls */}
-      <div className="flex items-center justify-between text-xs text-slate-400 pt-1 font-mono">
+      <div className="flex items-center justify-between text-xs text-cyan-400/70 pt-1 font-mono">
         <span>
           Records {filteredRecords.length > 0 ? (pageIndex - 1) * pageSize + 1 : 0}–
           {Math.min(pageIndex * pageSize, filteredRecords.length)} of {filteredRecords.length}
@@ -218,17 +218,17 @@ export const DataPreviewTable: React.FC<DataPreviewTableProps> = ({ records }) =
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={pageIndex <= 1}
-            className="p-1 rounded-md border border-slate-800 bg-slate-900 text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-800"
+            className="p-1.5 rounded-lg border border-cyan-950 bg-[#020509] text-cyan-400 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#07131e] hover:border-cyan-400 transition-all"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <span className="text-slate-300 px-2 tabular-nums">
+          <span className="text-cyan-200 px-2 tabular-nums font-semibold">
             {pageIndex} / {totalPages}
           </span>
           <button
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={pageIndex >= totalPages}
-            className="p-1 rounded-md border border-slate-800 bg-slate-900 text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-800"
+            className="p-1.5 rounded-lg border border-cyan-950 bg-[#020509] text-cyan-400 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#07131e] hover:border-cyan-400 transition-all"
           >
             <ChevronRight className="w-4 h-4" />
           </button>

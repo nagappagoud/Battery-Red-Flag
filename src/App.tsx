@@ -17,17 +17,16 @@ import { groupAndSummarizeBmsData } from './utils/bmsAggregator';
 import { SAMPLE_STANDARD_CYCLE } from './utils/sampleData';
 
 import { Header } from './components/Header';
-import { DisclaimerBanner } from './components/DisclaimerBanner';
 import { UploadSection } from './components/UploadSection';
 import { QualityCheckReport } from './components/QualityCheckReport';
 import { SessionSummaryView } from './components/SessionSummaryView';
 import { InteractiveCharts } from './components/InteractiveCharts';
 import { DataPreviewTable } from './components/DataPreviewTable';
-import { MethodologyNote } from './components/MethodologyNote';
 import { PlausibilitySettingsModal } from './components/PlausibilitySettingsModal';
 import { DocumentationModal } from './components/DocumentationModal';
 import { SupabaseModal } from './components/SupabaseModal';
 import { InvestigationPanel } from './components/InvestigationPanel';
+
 
 import {
   Layers,
@@ -209,7 +208,7 @@ export default function App() {
 
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-200 flex flex-col font-sans selection:bg-slate-800 selection:text-slate-100">
+    <div className="min-h-screen bg-[#020408] text-cyan-100 flex flex-col font-sans selection:bg-cyan-400 selection:text-black">
       {/* Top Application Header */}
       <Header
         onOpenSettings={() => setIsSettingsOpen(true)}
@@ -223,52 +222,23 @@ export default function App() {
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
-        {/* Core Disclaimer Banner */}
-        <DisclaimerBanner tempThreshold={config.tempAlertThreshold} />
-
-        {/* If no data loaded yet, show clean workbench empty state */}
+        {/* If no data loaded yet, show clean minimal landing state */}
         {!analysisResult ? (
           <div className="space-y-6 animate-in fade-in duration-200">
-            {/* Clean Engineering Workspace Landing */}
-            <div className="bg-[#0e131d] border border-slate-800/80 rounded-xl p-8 sm:p-10 text-center space-y-4">
-              <div className="max-w-xl mx-auto space-y-2">
-                <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-100">
-                  EV Battery Telemetry Inspection &amp; Red Flag Screener
+            {/* Cyber Cockpit Hero Section */}
+            <div className="cockpit-panel p-6 sm:p-7 text-center relative overflow-hidden group">
+              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-70 animate-pulse" />
+              <div className="relative z-10 space-y-2">
+                <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-[11px] font-mono text-cyan-300 mb-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+                  <span>OSCILLOSCOPE &amp; TELEMETRY SCREENER</span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                  EV Battery Telemetry <span className="text-cyan-400 drop-shadow-[0_0_14px_rgba(0,245,255,0.45)]">Inspection</span>
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                  Ingest raw or pre-filtered BMS time-series streams to run deterministic data-quality verification, evaluate chronological consistency, segment driving and charging sessions, inspect synchronized waveforms, and persist records to Supabase PostgreSQL.
+                <p className="text-xs sm:text-sm text-cyan-200/70 max-w-lg mx-auto leading-relaxed">
+                  Upload battery telemetry data to analyze performance and detect data-quality issues.
                 </p>
-              </div>
-
-              <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-                <button
-                  onClick={handleLoadDefaultSample}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium bg-slate-200 hover:bg-white text-slate-900 transition-colors"
-                >
-                  <Upload className="w-3.5 h-3.5" />
-                  <span>Load Reference Dataset</span>
-                </button>
-                <button
-                  onClick={() => setIsSupabaseModalOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 hover:border-slate-700 transition-colors"
-                >
-                  <ShieldAlert className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Supabase Database</span>
-                </button>
-                <button
-                  onClick={() => setIsSettingsOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 transition-colors"
-                >
-                  <Sliders className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Configure Screening Bounds</span>
-                </button>
-                <button
-                  onClick={() => setIsGuideOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 transition-colors"
-                >
-                  <BookOpen className="w-3.5 h-3.5 text-slate-400" />
-                  <span>CSV Format Guide</span>
-                </button>
               </div>
             </div>
 
@@ -278,52 +248,50 @@ export default function App() {
               currentLoadedSource={loadedSourceTitle}
               hasData={false}
             />
-
-            {/* Methodology Note */}
-            <MethodologyNote />
           </div>
         ) : (
+
           /* Active Data Loaded State */
           <div className="space-y-6 animate-in fade-in duration-150">
             {/* Navigation Tabs Bar */}
-            <div className="flex items-center justify-between gap-2 overflow-x-auto border-b border-slate-800/80 pb-2">
-              <div className="flex items-center gap-1 min-w-max p-1 bg-slate-900/60 border border-slate-800/80 rounded-lg">
+            <div className="flex items-center justify-between gap-2 overflow-x-auto border-b border-cyan-950/80 pb-2">
+              <div className="flex items-center gap-1 min-w-max p-1 bg-[#03070d] border border-cyan-950/90 rounded-xl shadow-inner">
                 <button
                   onClick={() => setActiveTab('overview')}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     activeTab === 'overview'
-                      ? 'bg-slate-800 text-slate-100 shadow-sm border border-slate-700/70'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-cyan-950/70 text-cyan-200 shadow-[0_0_16px_rgba(0,245,255,0.25)] border border-cyan-500/50 font-semibold'
+                      : 'text-cyan-400/60 hover:text-cyan-200 hover:bg-[#07131e]'
                   }`}
                 >
-                  <Layers className="w-3.5 h-3.5" />
+                  <Layers className="w-3.5 h-3.5 text-cyan-400" />
                   <span>Overview &amp; Sessions</span>
                 </button>
 
                 <button
                   onClick={() => setActiveTab('charts')}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     activeTab === 'charts'
-                      ? 'bg-slate-800 text-slate-100 shadow-sm border border-slate-700/70'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-cyan-950/70 text-cyan-200 shadow-[0_0_16px_rgba(0,245,255,0.25)] border border-cyan-500/50 font-semibold'
+                      : 'text-cyan-400/60 hover:text-cyan-200 hover:bg-[#07131e]'
                   }`}
                 >
-                  <LineChart className="w-3.5 h-3.5" />
+                  <LineChart className="w-3.5 h-3.5 text-cyan-400" />
                   <span>Waveforms</span>
                 </button>
 
                 <button
                   onClick={() => setActiveTab('quality')}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     activeTab === 'quality'
-                      ? 'bg-slate-800 text-slate-100 shadow-sm border border-slate-700/70'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-cyan-950/70 text-cyan-200 shadow-[0_0_16px_rgba(0,245,255,0.25)] border border-cyan-500/50 font-semibold'
+                      : 'text-cyan-400/60 hover:text-cyan-200 hover:bg-[#07131e]'
                   }`}
                 >
-                  <Gauge className="w-3.5 h-3.5" />
+                  <Gauge className="w-3.5 h-3.5 text-cyan-400" />
                   <span>Quality Audit</span>
                   {analysisResult.qualityReport.rowsWithIssuesCount > 0 && (
-                    <span className="font-mono text-[10px] text-slate-400">
+                    <span className="font-mono text-[10px] text-cyan-300 bg-cyan-900/40 px-1.5 py-0.2 rounded border border-cyan-600/40">
                       ({analysisResult.qualityReport.rowsWithIssuesCount})
                     </span>
                   )}
@@ -331,43 +299,43 @@ export default function App() {
 
                 <button
                   onClick={() => setActiveTab('investigation')}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     activeTab === 'investigation'
-                      ? 'bg-slate-800 text-slate-100 shadow-sm border border-slate-700/70'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-cyan-950/70 text-cyan-200 shadow-[0_0_16px_rgba(0,245,255,0.25)] border border-cyan-500/50 font-semibold'
+                      : 'text-cyan-400/60 hover:text-cyan-200 hover:bg-[#07131e]'
                   }`}
                 >
-                  <ShieldAlert className="w-3.5 h-3.5" />
+                  <ShieldAlert className="w-3.5 h-3.5 text-cyan-400" />
                   <span>Investigation &amp; DB</span>
                 </button>
 
                 <button
                   onClick={() => setActiveTab('table')}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     activeTab === 'table'
-                      ? 'bg-slate-800 text-slate-100 shadow-sm border border-slate-700/70'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-cyan-950/70 text-cyan-200 shadow-[0_0_16px_rgba(0,245,255,0.25)] border border-cyan-500/50 font-semibold'
+                      : 'text-cyan-400/60 hover:text-cyan-200 hover:bg-[#07131e]'
                   }`}
                 >
-                  <Table className="w-3.5 h-3.5" />
+                  <Table className="w-3.5 h-3.5 text-cyan-400" />
                   <span>Records ({analysisResult.records.length})</span>
                 </button>
 
                 <button
                   onClick={() => setActiveTab('upload')}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     activeTab === 'upload'
-                      ? 'bg-slate-800 text-slate-100 shadow-sm border border-slate-700/70'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-cyan-950/70 text-cyan-200 shadow-[0_0_16px_rgba(0,245,255,0.25)] border border-cyan-500/50 font-semibold'
+                      : 'text-cyan-400/60 hover:text-cyan-200 hover:bg-[#07131e]'
                   }`}
                 >
-                  <Upload className="w-3.5 h-3.5" />
+                  <Upload className="w-3.5 h-3.5 text-cyan-400" />
                   <span>Ingest Stream</span>
                 </button>
               </div>
 
-              <div className="hidden sm:flex items-center text-xs text-slate-500 font-mono">
-                Source: <span className="text-slate-300 font-medium ml-1.5">{loadedSourceTitle}</span>
+              <div className="hidden sm:flex items-center text-xs text-cyan-400/60 font-mono">
+                Source: <span className="text-cyan-200 font-medium ml-1.5">{loadedSourceTitle}</span>
               </div>
             </div>
 
@@ -406,8 +374,6 @@ export default function App() {
                   config={config}
                   onOpenSettings={() => setIsSettingsOpen(true)}
                 />
-
-                <MethodologyNote />
               </div>
             )}
 
@@ -508,31 +474,31 @@ export default function App() {
       />
 
       {/* Footer */}
-      <footer className="border-t border-slate-900 bg-[#070a12] py-5 text-center text-xs text-slate-500">
+      <footer className="border-t border-cyan-950/80 bg-[#020509] py-5 text-center text-xs text-cyan-500/70">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p>
-            Battery Red Flag · EV BMS Data Quality Screener, Oscilloscope &amp; Supabase Storage
+          <p className="font-medium text-cyan-300/80">
+            EV BMS <span className="text-cyan-400">Data Analyzer</span>
           </p>
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsSupabaseModalOpen(true)}
-              className="hover:text-slate-300"
+              className="hover:text-cyan-200 transition-colors"
             >
               Supabase Status
             </button>
-            <span className="text-slate-700">·</span>
+            <span className="text-cyan-900">·</span>
             <button
               onClick={() => setIsGuideOpen(true)}
-              className="hover:text-slate-300"
+              className="hover:text-cyan-200 transition-colors"
             >
-              Schema Reference
+              Data Spec
             </button>
-            <span className="text-slate-700">·</span>
+            <span className="text-cyan-900">·</span>
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="hover:text-slate-300"
+              className="hover:text-cyan-200 transition-colors"
             >
-              Screening Boundaries
+              Screening Limits
             </button>
           </div>
         </div>

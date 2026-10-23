@@ -1,22 +1,26 @@
 @import "tailwindcss";
 
-/* =========================================
-   EV BMS ANALYZER — VISUAL FOUNDATION
-   ========================================= */
+/* ==========================================================================
+   CYAN & PITCH-BLACK BMS TELEMETRY COCKPIT THEME
+   Engineered for high-vibrancy, dark-mode oscilloscope visualization.
+   Zero generic AI slop: pure cybernetic precision, neon cyan & deep black.
+   ========================================================================== */
 
 @layer base {
   :root {
-    --font-sans: 'Plus Jakarta Sans', -apple-system,
-      BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-    --font-mono: 'JetBrains Mono', ui-monospace,
-      SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --bg-pure-black: #020408;
+    --bg-cockpit-base: #04080e;
+    --bg-cockpit-panel: rgba(6, 13, 21, 0.88);
+    --panel-border: rgba(6, 182, 212, 0.22);
+    --panel-border-hover: rgba(34, 211, 238, 0.6);
 
-    --app-bg: #080c14;
-    --panel-bg: rgba(15, 23, 42, 0.72);
-    --panel-border: rgba(148, 163, 184, 0.14);
-    --accent-cyan: #38bdf8;
-    --accent-green: #34d399;
+    --cyan-primary: #00f5ff;
+    --cyan-glow: rgba(0, 245, 255, 0.25);
+    --cyan-accent: #22d3ee;
+    --cyan-deep: #0891b2;
   }
 
   * {
@@ -26,29 +30,26 @@
   html {
     scroll-behavior: smooth;
     color-scheme: dark;
+    background-color: var(--bg-pure-black);
   }
 
   body {
     margin: 0;
     min-width: 320px;
     min-height: 100vh;
-    background:
-      radial-gradient(
-        ellipse at 15% 0%,
-        rgba(14, 165, 233, 0.09),
-        transparent 36%
-      ),
-      radial-gradient(
-        ellipse at 90% 12%,
-        rgba(16, 185, 129, 0.055),
-        transparent 30%
-      ),
-      var(--app-bg);
-
-    color: #e2e8f0;
+    background-color: #020408;
+    background-image: 
+      radial-gradient(ellipse 90% 40% at 50% -10%, rgba(0, 245, 255, 0.12), transparent 70%),
+      radial-gradient(ellipse 60% 30% at 90% 80%, rgba(6, 182, 212, 0.06), transparent 60%),
+      linear-gradient(to right, rgba(6, 182, 212, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(6, 182, 212, 0.03) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+    background-attachment: fixed;
+    color: #e0f2fe;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
 
   button,
@@ -63,8 +64,8 @@
   }
 
   ::selection {
-    color: #f0f9ff;
-    background: rgba(14, 165, 233, 0.32);
+    color: #000000;
+    background: #00f5ff;
   }
 
   .tabular-nums {
@@ -72,212 +73,176 @@
   }
 }
 
-/* =========================================
-   REUSABLE PREMIUM PANEL
-   ========================================= */
+/* ==========================================================================
+   ANIMATED SCANLINES & CYBER HUD KEYFRAMES
+   ========================================================================== */
 
-.glass-panel {
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  border-radius: 16px;
-  box-shadow:
-    0 10px 35px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.025);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  transition:
-    border-color 220ms ease,
-    background-color 220ms ease,
-    box-shadow 220ms ease,
-    transform 220ms ease;
+@keyframes pulse-cyan-glow {
+  0%, 100% {
+    box-shadow: 0 0 14px rgba(0, 245, 255, 0.2), inset 0 0 10px rgba(0, 245, 255, 0.05);
+    border-color: rgba(6, 182, 212, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(0, 245, 255, 0.45), inset 0 0 16px rgba(0, 245, 255, 0.12);
+    border-color: rgba(34, 211, 238, 0.8);
+  }
 }
 
-.glass-panel:hover {
-  border-color: rgba(56, 189, 248, 0.23);
-  box-shadow:
-    0 14px 38px rgba(0, 0, 0, 0.18),
-    0 0 22px rgba(56, 189, 248, 0.035);
+@keyframes laser-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  50%, 100% {
+    transform: translateX(100%);
+  }
 }
 
-/* =========================================
-   SUBTLE ACCENT EFFECTS
-   ========================================= */
-
-.accent-text {
-  background: linear-gradient(
-    100deg,
-    #7dd3fc 0%,
-    #38bdf8 48%,
-    #6ee7b7 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+@keyframes grid-drift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 36px 36px;
+  }
 }
 
-.ambient-glow {
+@keyframes neon-flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 0.94; }
+  94% { opacity: 1; }
+  96% { opacity: 0.9; }
+  98% { opacity: 1; }
+}
+
+@keyframes ripple-ping {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+/* ==========================================================================
+   VIBRANT CYAN & BLACK COCKPIT SURFACES
+   ========================================================================== */
+
+.cockpit-panel {
+  background: rgba(4, 9, 15, 0.88);
+  border: 1px solid rgba(6, 182, 212, 0.22);
+  border-radius: 14px;
+  box-shadow: 
+    0 16px 40px -10px rgba(0, 0, 0, 0.75),
+    0 0 1px 1px rgba(0, 245, 255, 0.08) inset;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cockpit-panel:hover {
+  border-color: rgba(34, 211, 238, 0.45);
+  box-shadow: 
+    0 20px 48px -8px rgba(0, 0, 0, 0.85),
+    0 0 24px rgba(0, 245, 255, 0.15),
+    0 0 1px 1px rgba(0, 245, 255, 0.18) inset;
+}
+
+.cyan-neon-glow {
+  text-shadow: 0 0 12px rgba(0, 245, 255, 0.7), 0 0 24px rgba(6, 182, 212, 0.4);
+}
+
+.cyan-box-glow {
+  box-shadow: 0 0 24px rgba(0, 245, 255, 0.2), inset 0 0 14px rgba(0, 245, 255, 0.06);
+}
+
+.live-beacon {
   position: relative;
-  isolation: isolate;
+  display: inline-flex;
 }
 
-.ambient-glow::before {
-  content: "";
+.live-beacon::after {
+  content: '';
   position: absolute;
-  z-index: -1;
-  inset: -1px;
-  border-radius: inherit;
-  background: linear-gradient(
-    135deg,
-    rgba(56, 189, 248, 0.12),
-    transparent 45%,
-    rgba(52, 211, 153, 0.08)
-  );
-  opacity: 0.75;
+  inset: -3px;
+  border-radius: 9999px;
+  background: #00f5ff;
+  animation: ripple-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  z-index: 0;
   pointer-events: none;
 }
 
-/* =========================================
-   ENTRANCE ANIMATIONS
-   ========================================= */
+/* ==========================================================================
+   INTERACTIVE OSCILLOSCOPE TRACES & DROPZONE
+   ========================================================================== */
 
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.oscilloscope-track {
+  background: linear-gradient(180deg, rgba(3, 7, 12, 0.95) 0%, rgba(2, 5, 9, 0.98) 100%);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  border-radius: 10px;
+  transition: all 200ms ease;
 }
 
-@keyframes soft-pulse {
-  0%,
-  100% {
-    opacity: 0.7;
-  }
-
-  50% {
-    opacity: 1;
-  }
+.oscilloscope-track:hover {
+  border-color: rgba(34, 211, 238, 0.5);
+  box-shadow: 0 0 18px rgba(0, 245, 255, 0.12);
 }
 
-@keyframes border-glow {
-  0%,
-  100% {
-    border-color: rgba(56, 189, 248, 0.22);
-  }
-
-  50% {
-    border-color: rgba(52, 211, 153, 0.42);
-  }
+.upload-neon-zone {
+  background: linear-gradient(180deg, rgba(3, 7, 13, 0.7) 0%, rgba(2, 5, 10, 0.9) 100%);
+  border: 1.5px dashed rgba(6, 182, 212, 0.35);
+  transition: all 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.animate-fade-up {
-  animation: fade-up 500ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+.upload-neon-zone:hover {
+  border-color: #00f5ff;
+  background: linear-gradient(180deg, rgba(6, 182, 212, 0.08) 0%, rgba(2, 5, 10, 0.95) 100%);
+  box-shadow: 0 0 30px rgba(0, 245, 255, 0.18), inset 0 0 20px rgba(0, 245, 255, 0.05);
+  transform: translateY(-1px);
 }
 
-.animate-soft-pulse {
-  animation: soft-pulse 2.4s ease-in-out infinite;
+.upload-neon-zone.is-dragging {
+  border-color: #00f5ff;
+  background: rgba(0, 245, 255, 0.12);
+  box-shadow: 0 0 45px rgba(0, 245, 255, 0.35), inset 0 0 30px rgba(0, 245, 255, 0.1);
 }
 
-.animate-border-glow {
-  animation: border-glow 3s ease-in-out infinite;
-}
-
-/* Staggered entrance for dashboard cards */
-
-.stagger-1 {
-  animation-delay: 60ms;
-}
-
-.stagger-2 {
-  animation-delay: 120ms;
-}
-
-.stagger-3 {
-  animation-delay: 180ms;
-}
-
-.stagger-4 {
-  animation-delay: 240ms;
-}
-
-/* =========================================
-   INTERACTIVE CARDS & UPLOAD AREAS
-   ========================================= */
-
-.metric-card {
-  transition:
-    transform 220ms ease,
-    border-color 220ms ease,
-    box-shadow 220ms ease;
-}
-
-.metric-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(56, 189, 248, 0.3);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
-}
-
-.upload-dropzone {
-  transition:
-    border-color 200ms ease,
-    background-color 200ms ease,
-    box-shadow 200ms ease;
-}
-
-.upload-dropzone:hover {
-  border-color: rgba(56, 189, 248, 0.55);
-  background-color: rgba(14, 165, 233, 0.045);
-}
-
-.upload-dropzone.is-dragging {
-  border-color: var(--accent-cyan);
-  background-color: rgba(14, 165, 233, 0.09);
-  box-shadow: 0 0 26px rgba(56, 189, 248, 0.1);
-}
-
-/* =========================================
-   SCROLLBARS
-   ========================================= */
+/* ==========================================================================
+   SCROLLBAR & PRECISION ACCENTS
+   ========================================================================== */
 
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #080c14;
+  background: #020408;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #263449;
-  border: 1px solid #080c14;
+  background: rgba(6, 182, 212, 0.35);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3b506b;
+  background: rgba(0, 245, 255, 0.7);
+  box-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
 }
 
-/* =========================================
-   ACCESSIBILITY
-   ========================================= */
-
 :focus-visible {
-  outline: 2px solid rgba(56, 189, 248, 0.85);
-  outline-offset: 3px;
+  outline: 2px solid #00f5ff;
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -170,6 +170,29 @@ export async function checkSupabaseHealth(): Promise<SupabaseStatus> {
 }
 
 /**
+ * Safely converts any input into a valid ISO-8601 timestamp string for PostgreSQL TIMESTAMPTZ columns.
+ * Prevents "invalid input syntax for type timestamp with time zone" on unparseable/missing CSV rows.
+ */
+function toValidIsoTimestamp(raw: any, fallbackMs: number = Date.now()): string {
+  if (!raw) return new Date(fallbackMs).toISOString();
+  if (typeof raw === 'number' && !isNaN(raw)) {
+    return new Date(raw).toISOString();
+  }
+  const str = String(raw).trim();
+  if (!str || str === 'Missing' || str === 'N/A' || str === 'Invalid Date') {
+    return new Date(fallbackMs).toISOString();
+  }
+  const parsed = new Date(str);
+  if (!isNaN(parsed.getTime())) {
+    return parsed.toISOString();
+  }
+  return new Date(fallbackMs).toISOString();
+}
+
+const VALID_SESSION_MODES = new Set(['driving', 'charging', 'idle', 'overall', 'unknown']);
+const VALID_DATA_SOURCES = new Set(['uploaded_csv', 'manual_entry', 'reference_sample', 'connected_stream']);
+
+/**
  * Persists an ingested dataset, its session summary, synchronized battery readings,
  * and detected quality/plausibility alerts into Supabase PostgreSQL.
  */
@@ -221,17 +244,20 @@ export async function persistBmsDataset(params: {
     throw new Error(`Failed to upsert vehicle profile: ${vehicleError.message}`);
   }
 
-  // 2. Insert Session Record
+  // 2. Insert Session Record with safe timestamps and verified check constraints
+  const safeMode = VALID_SESSION_MODES.has(summary.mode) ? summary.mode : 'overall';
+  const safeSource = VALID_DATA_SOURCES.has(dataSource) ? dataSource : 'uploaded_csv';
+
   const sessionRow = {
     id: sessionId,
     vehicle_id: vehicleId,
     session_index: 0,
-    label: `${sourceName || 'Telemetry Dataset'} (${summary.mode})`,
-    mode: summary.mode || 'overall',
-    data_source: dataSource,
+    label: `${sourceName || 'Telemetry Dataset'} (${safeMode})`,
+    mode: safeMode,
+    data_source: safeSource,
     is_simulated: isSimulated,
-    start_time: summary.startTime || now.toISOString(),
-    end_time: summary.endTime || now.toISOString(),
+    start_time: toValidIsoTimestamp(summary.startTime, summary.startTimestampMs || now.getTime()),
+    end_time: toValidIsoTimestamp(summary.endTime, summary.endTimestampMs || now.getTime()),
     duration_seconds: summary.durationSeconds,
     total_records: summary.totalRecords,
     valid_records: summary.validRecords,
@@ -249,12 +275,12 @@ export async function persistBmsDataset(params: {
     throw new Error(`Failed to insert telemetry session: ${sessionError.message}`);
   }
 
-  // 3. Batch Insert Readings in chunks of 250
+  // 3. Batch Insert Readings in chunks of 250 with guaranteed valid timestamps
   const readingsRows = analysis.records.map((r, idx) => ({
     session_id: sessionId,
     vehicle_id: r.vehicle_id || vehicleId,
     row_number: r.rowNumber || idx + 1,
-    timestamp: r.timestamp || new Date(r.timestampMs || Date.now()).toISOString(),
+    timestamp: toValidIsoTimestamp(r.timestamp, r.timestampMs || (now.getTime() + idx * 1000)),
     voltage_v: r.voltage_v,
     current_a: r.current_a,
     temperature_c: r.temperature_c,
@@ -263,6 +289,7 @@ export async function persistBmsDataset(params: {
     is_valid: r.isValid,
     raw_data: r.rawRecord || {},
   }));
+
 
   const BATCH_SIZE = 250;
   for (let i = 0; i < readingsRows.length; i += BATCH_SIZE) {
@@ -287,13 +314,14 @@ export async function persistBmsDataset(params: {
           field: issue.field,
           message: issue.message,
           row_number: item.rowNumber,
-          timestamp: item.timestamp,
+          timestamp: toValidIsoTimestamp(item.timestamp, now.getTime()),
           acknowledged: false,
           created_at: now.toISOString(),
         });
       }
     }
   }
+
 
   if (alertsToInsert.length > 0) {
     // Insert alerts in batches
@@ -518,13 +546,29 @@ export async function saveInvestigationToSupabase(params: {
   const client = getSupabaseClient();
   if (!client) return null;
 
+  const VALID_STATUSES = new Set(['pending', 'in_progress', 'resolved', 'flagged_critical']);
+  const VALID_ROOT_CAUSES = new Set([
+    'unspecified',
+    'thermal_excursion',
+    'cell_voltage_sag',
+    'sensor_drift',
+    'overcurrent_spike',
+    'data_dropout',
+    'normal_operation',
+  ]);
+
+  const sanitizedStatus = VALID_STATUSES.has(params.status) ? params.status : 'pending';
+  const sanitizedRootCause = VALID_ROOT_CAUSES.has(params.rootCauseCategory)
+    ? params.rootCauseCategory
+    : 'unspecified';
+
   const now = new Date().toISOString();
   const payload = {
     session_id: params.sessionId,
     vehicle_id: params.vehicleId,
-    status: params.status,
-    engineer_notes: params.engineerNotes,
-    root_cause_category: params.rootCauseCategory,
+    status: sanitizedStatus,
+    engineer_notes: params.engineerNotes || '',
+    root_cause_category: sanitizedRootCause,
     findings: params.findings || {},
     investigated_by: params.investigatedBy || 'BMS Safety Engineer',
     updated_at: now,
@@ -543,3 +587,4 @@ export async function saveInvestigationToSupabase(params: {
 
   return data as InvestigationResult;
 }
+

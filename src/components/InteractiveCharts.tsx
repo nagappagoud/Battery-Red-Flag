@@ -37,7 +37,7 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
 
   if (validData.length === 0) {
     return (
-      <div className="bg-[#0e131d] border border-slate-800/80 rounded-xl p-8 text-center text-slate-500 text-xs font-mono">
+      <div className="cockpit-panel p-8 text-center text-cyan-400/60 text-xs font-mono">
         No valid time-series records available for waveform rendering.
       </div>
     );
@@ -161,7 +161,7 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
 
     if (values.length === 0) {
       return (
-        <div className="bg-slate-900/30 border border-slate-800/80 rounded-lg p-4 text-center text-xs text-slate-500 font-mono">
+        <div className="bg-[#020509] border border-cyan-950 rounded-lg p-4 text-center text-xs text-cyan-400/60 font-mono">
           No data available for {title}
         </div>
       );
@@ -191,28 +191,28 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
     const gradId = `trace-${title.replace(/[^a-zA-Z0-9]/g, '')}`;
 
     return (
-      <div className="bg-slate-900/40 border border-slate-800/70 rounded-lg p-3 space-y-1.5">
+      <div className="oscilloscope-track p-3.5 space-y-2">
         <div className="flex items-center justify-between text-xs px-1">
           <div className="flex items-center gap-2">
-            <span className="text-slate-400">{icon}</span>
-            <span className="font-medium text-slate-200">{title}</span>
-            <span className="text-[11px] text-slate-500 font-mono">({unit})</span>
+            <span className="text-cyan-400">{icon}</span>
+            <span className="font-semibold text-white tracking-wide">{title}</span>
+            <span className="text-[11px] text-cyan-400/70 font-mono">({unit})</span>
           </div>
 
           <div className="flex items-center gap-3 font-mono text-[11px] tabular-nums">
             {hoverVal !== null && hoverVal !== undefined ? (
-              <span className="text-slate-100 font-medium">
+              <span className="text-cyan-300 font-bold drop-shadow-[0_0_8px_rgba(0,245,255,0.6)]">
                 {hoverVal.toFixed(2)} {unit}
               </span>
             ) : (
-              <span className="text-slate-500">
-                Min {dataMin.toFixed(1)} · Max {dataMax.toFixed(1)} {unit}
+              <span className="text-cyan-400/60">
+                Min <span className="text-cyan-200">{dataMin.toFixed(1)}</span> · Max <span className="text-cyan-200">{dataMax.toFixed(1)}</span> {unit}
               </span>
             )}
           </div>
         </div>
 
-        <div className="w-full overflow-hidden">
+        <div className="w-full overflow-hidden rounded-lg bg-[#010306] border border-cyan-950/60">
           <svg
             viewBox={`0 0 ${svgWidth} ${trackHeight}`}
             className="w-full h-auto cursor-crosshair select-none block"
@@ -221,18 +221,25 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
           >
             <defs>
               <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={strokeColor} stopOpacity="0.12" />
+                <stop offset="0%" stopColor={strokeColor} stopOpacity="0.25" />
                 <stop offset="100%" stopColor={strokeColor} stopOpacity="0.0" />
               </linearGradient>
+              <filter id="neonTraceGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="2" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
             </defs>
 
-            {/* Grid lines */}
+            {/* Oscilloscope Grid lines */}
             <line
               x1={padding.left}
               y1={padding.top}
               x2={svgWidth - padding.right}
               y2={padding.top}
-              stroke="#1e293b"
+              stroke="rgba(6, 182, 212, 0.12)"
               strokeDasharray="2 4"
               strokeWidth="0.8"
             />
@@ -241,7 +248,7 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
               y1={padding.top + innerHeight / 2}
               x2={svgWidth - padding.right}
               y2={padding.top + innerHeight / 2}
-              stroke="#1e293b"
+              stroke="rgba(6, 182, 212, 0.14)"
               strokeDasharray="2 4"
               strokeWidth="0.8"
             />
@@ -250,8 +257,34 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
               y1={padding.top + innerHeight}
               x2={svgWidth - padding.right}
               y2={padding.top + innerHeight}
-              stroke="#334155"
-              strokeWidth="0.8"
+              stroke="rgba(6, 182, 212, 0.25)"
+              strokeWidth="1"
+            />
+
+            {/* Vertical Time Division Grids */}
+            <line
+              x1={padding.left + innerWidth * 0.25}
+              y1={padding.top}
+              x2={padding.left + innerWidth * 0.25}
+              y2={padding.top + innerHeight}
+              stroke="rgba(6, 182, 212, 0.08)"
+              strokeDasharray="2 4"
+            />
+            <line
+              x1={padding.left + innerWidth * 0.5}
+              y1={padding.top}
+              x2={padding.left + innerWidth * 0.5}
+              y2={padding.top + innerHeight}
+              stroke="rgba(6, 182, 212, 0.08)"
+              strokeDasharray="2 4"
+            />
+            <line
+              x1={padding.left + innerWidth * 0.75}
+              y1={padding.top}
+              x2={padding.left + innerWidth * 0.75}
+              y2={padding.top + innerHeight}
+              stroke="rgba(6, 182, 212, 0.08)"
+              strokeDasharray="2 4"
             />
 
             {/* Y axis labels */}
@@ -259,7 +292,7 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
               x={padding.left - 8}
               y={padding.top + 4}
               textAnchor="end"
-              className="fill-slate-500 text-[10px] font-mono tabular-nums"
+              className="fill-cyan-400/60 text-[10px] font-mono tabular-nums"
             >
               {maxY.toFixed(0)}
             </text>
@@ -267,7 +300,7 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
               x={padding.left - 8}
               y={padding.top + innerHeight / 2 + 3}
               textAnchor="end"
-              className="fill-slate-600 text-[10px] font-mono tabular-nums"
+              className="fill-cyan-500/40 text-[10px] font-mono tabular-nums"
             >
               {((minY + maxY) / 2).toFixed(0)}
             </text>
@@ -275,7 +308,7 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
               x={padding.left - 8}
               y={padding.top + innerHeight}
               textAnchor="end"
-              className="fill-slate-500 text-[10px] font-mono tabular-nums"
+              className="fill-cyan-400/60 text-[10px] font-mono tabular-nums"
             >
               {minY.toFixed(0)}
             </text>
@@ -288,44 +321,46 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
                   y1={threshY}
                   x2={svgWidth - padding.right}
                   y2={threshY}
-                  stroke="#f59e0b"
+                  stroke="#22d3ee"
                   strokeDasharray="3 3"
-                  strokeWidth="1"
+                  strokeWidth="1.2"
                 />
                 <text
                   x={svgWidth - padding.right - 4}
                   y={threshY - 3}
                   textAnchor="end"
-                  className="fill-amber-400 text-[9px] font-mono tabular-nums"
+                  className="fill-cyan-300 text-[9px] font-mono tabular-nums drop-shadow-[0_0_4px_rgba(0,245,255,0.8)]"
                 >
                   {thresholdLabel || `Threshold ${thresholdValue}${unit}`}
                 </text>
               </g>
             )}
 
-            {/* Area & Line */}
+            {/* Area & Glowing Trace Line */}
             {areaD && <path d={areaD} fill={`url(#${gradId})`} />}
             {pathD && (
               <path
                 d={pathD}
                 fill="none"
                 stroke={strokeColor}
-                strokeWidth="1.6"
+                strokeWidth="1.8"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                filter="url(#neonTraceGlow)"
               />
             )}
 
-            {/* Hover Cursor Vertical Line */}
+            {/* Hover Cursor Vertical Line with Cyan Glow */}
             {hoverX !== null && (
               <line
                 x1={hoverX}
                 y1={padding.top}
                 x2={hoverX}
                 y2={padding.top + innerHeight}
-                stroke="#64748b"
-                strokeWidth="1"
-                strokeDasharray="2 2"
+                stroke="#00f5ff"
+                strokeWidth="1.2"
+                strokeDasharray="3 3"
+                className="drop-shadow-[0_0_6px_rgba(0,245,255,0.9)]"
               />
             )}
 
@@ -334,10 +369,11 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
               <circle
                 cx={hoverX}
                 cy={hoverY}
-                r="3.5"
+                r="4.5"
                 fill={strokeColor}
-                stroke="#090d16"
-                strokeWidth="1.5"
+                stroke="#020408"
+                strokeWidth="2"
+                className="drop-shadow-[0_0_10px_rgba(0,245,255,1)]"
               />
             )}
 
@@ -346,7 +382,7 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
               x={padding.left}
               y={padding.top + innerHeight + 16}
               textAnchor="start"
-              className="fill-slate-500 text-[9px] font-mono tabular-nums"
+              className="fill-cyan-400/50 text-[9px] font-mono tabular-nums"
             >
               {formatTimeTick(minTime)}
             </text>
@@ -354,7 +390,7 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
               x={padding.left + innerWidth / 2}
               y={padding.top + innerHeight + 16}
               textAnchor="middle"
-              className="fill-slate-600 text-[9px] font-mono tabular-nums"
+              className="fill-cyan-400/40 text-[9px] font-mono tabular-nums"
             >
               {formatTimeTick(minTime + timeSpan / 2)}
             </text>
@@ -362,7 +398,7 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
               x={svgWidth - padding.right}
               y={padding.top + innerHeight + 16}
               textAnchor="end"
-              className="fill-slate-500 text-[9px] font-mono tabular-nums"
+              className="fill-cyan-400/50 text-[9px] font-mono tabular-nums"
             >
               {formatTimeTick(maxTime)}
             </text>
@@ -375,28 +411,28 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
   return (
     <div
       ref={containerRef}
-      className="bg-[#0e131d] border border-slate-800/80 rounded-xl p-5 shadow-sm space-y-4"
+      className="cockpit-panel p-5 sm:p-6 space-y-4"
     >
       {/* Chart Header & View Mode Switcher */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-cyan-950/60 pb-4">
         <div>
-          <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
-            <LineChart className="w-4 h-4 text-slate-400" />
+          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+            <LineChart className="w-4 h-4 text-cyan-400" />
             <span>Time-Series Telemetry Channels</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Synchronized timeline waveforms for terminal voltage, pack current, thermal state, and SoC.
+          <p className="text-xs text-cyan-200/70 mt-0.5">
+            Synchronized digital oscilloscope waveforms for terminal voltage, pack current, thermal state, and SoC.
           </p>
         </div>
 
         {/* View Mode Switcher */}
-        <div className="bg-slate-900 p-0.5 rounded-lg border border-slate-800 flex items-center text-xs">
+        <div className="bg-[#02050a] p-0.5 rounded-lg border border-cyan-950/80 flex items-center text-xs">
           <button
             onClick={() => setViewMode('stacked')}
             className={`px-2.5 py-1 rounded-md font-medium transition-all ${
               viewMode === 'stacked'
-                ? 'bg-slate-800 text-slate-100 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-cyan-950/70 text-cyan-200 border border-cyan-500/40 shadow-[0_0_12px_rgba(0,245,255,0.25)] font-semibold'
+                : 'text-cyan-400/60 hover:text-cyan-200'
             }`}
           >
             Synchronized (4-Channel)
@@ -405,8 +441,8 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
             onClick={() => setViewMode('voltage')}
             className={`px-2.5 py-1 rounded-md font-medium transition-all ${
               viewMode === 'voltage'
-                ? 'bg-slate-800 text-slate-100 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-cyan-950/70 text-cyan-200 border border-cyan-500/40 shadow-[0_0_12px_rgba(0,245,255,0.25)] font-semibold'
+                : 'text-cyan-400/60 hover:text-cyan-200'
             }`}
           >
             Voltage
@@ -415,8 +451,8 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
             onClick={() => setViewMode('current')}
             className={`px-2.5 py-1 rounded-md font-medium transition-all ${
               viewMode === 'current'
-                ? 'bg-slate-800 text-slate-100 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-cyan-950/70 text-cyan-200 border border-cyan-500/40 shadow-[0_0_12px_rgba(0,245,255,0.25)] font-semibold'
+                : 'text-cyan-400/60 hover:text-cyan-200'
             }`}
           >
             Current
@@ -425,8 +461,8 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
             onClick={() => setViewMode('temperature')}
             className={`px-2.5 py-1 rounded-md font-medium transition-all ${
               viewMode === 'temperature'
-                ? 'bg-slate-800 text-slate-100 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-cyan-950/70 text-cyan-200 border border-cyan-500/40 shadow-[0_0_12px_rgba(0,245,255,0.25)] font-semibold'
+                : 'text-cyan-400/60 hover:text-cyan-200'
             }`}
           >
             Temperature
@@ -435,8 +471,8 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
             onClick={() => setViewMode('soc')}
             className={`px-2.5 py-1 rounded-md font-medium transition-all ${
               viewMode === 'soc'
-                ? 'bg-slate-800 text-slate-100 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-cyan-950/70 text-cyan-200 border border-cyan-500/40 shadow-[0_0_12px_rgba(0,245,255,0.25)] font-semibold'
+                : 'text-cyan-400/60 hover:text-cyan-200'
             }`}
           >
             SoC
@@ -445,34 +481,34 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
       </div>
 
       {/* Hover Inspection HUD Bar */}
-      <div className="bg-slate-900/60 border border-slate-800/60 rounded-lg px-3.5 py-2 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="bg-[#020509] border border-cyan-900/50 rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs shadow-inner">
         <div className="flex items-center gap-2 font-mono text-[11px]">
-          <Activity className="w-3.5 h-3.5 text-slate-400" />
-          <span className="text-slate-400">HUD:</span>
+          <Activity className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+          <span className="text-cyan-400/80 font-bold">HUD:</span>
           {hoveredRecord ? (
-            <span className="text-slate-200">
+            <span className="text-cyan-100">
               {hoveredRecord.timestamp} · Row #{hoveredRecord.rowNumber}
             </span>
           ) : (
-            <span className="text-slate-500">Move cursor across waveforms to inspect data points</span>
+            <span className="text-cyan-400/50">Move cursor across waveforms to inspect real-time values</span>
           )}
         </div>
 
         {hoveredRecord && (
           <div className="flex flex-wrap items-center gap-3.5 font-mono text-[11px] tabular-nums">
-            <span className="text-slate-300">
-              V: <strong className="text-slate-100">{hoveredRecord.voltage_v !== null ? `${hoveredRecord.voltage_v} V` : 'null'}</strong>
+            <span className="text-cyan-300">
+              V: <strong className="text-white drop-shadow-[0_0_6px_rgba(0,245,255,0.7)]">{hoveredRecord.voltage_v !== null ? `${hoveredRecord.voltage_v} V` : 'null'}</strong>
             </span>
-            <span className="text-slate-300">
-              I: <strong className="text-slate-100">{hoveredRecord.current_a !== null ? `${hoveredRecord.current_a} A` : 'null'}</strong>
+            <span className="text-cyan-300">
+              I: <strong className="text-white drop-shadow-[0_0_6px_rgba(0,245,255,0.7)]">{hoveredRecord.current_a !== null ? `${hoveredRecord.current_a} A` : 'null'}</strong>
             </span>
-            <span className="text-slate-300">
-              T: <strong className="text-slate-100">{hoveredRecord.temperature_c !== null ? `${hoveredRecord.temperature_c} °C` : 'null'}</strong>
+            <span className="text-cyan-300">
+              T: <strong className="text-white drop-shadow-[0_0_6px_rgba(0,245,255,0.7)]">{hoveredRecord.temperature_c !== null ? `${hoveredRecord.temperature_c} °C` : 'null'}</strong>
             </span>
-            <span className="text-slate-300">
-              SoC: <strong className="text-slate-100">{hoveredRecord.soc_pct !== null ? `${hoveredRecord.soc_pct} %` : 'null'}</strong>
+            <span className="text-cyan-300">
+              SoC: <strong className="text-white drop-shadow-[0_0_6px_rgba(0,245,255,0.7)]">{hoveredRecord.soc_pct !== null ? `${hoveredRecord.soc_pct} %` : 'null'}</strong>
             </span>
-            <span className="text-slate-400 uppercase">
+            <span className="text-cyan-400 bg-cyan-950/60 px-1.5 py-0.5 rounded border border-cyan-800/50 uppercase">
               [{hoveredRecord.mode}]
             </span>
           </div>
@@ -485,8 +521,8 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
           renderSingleTrack(
             'Terminal Voltage',
             'V',
-            <Zap className="w-3.5 h-3.5 text-slate-400" />,
-            '#cbd5e1', // Clean platinum
+            <Zap className="w-3.5 h-3.5 text-cyan-400" />,
+            '#00f5ff', // Luminous Electric Cyan
             (r) => r.voltage_v,
             undefined,
             undefined,
@@ -499,8 +535,8 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
           renderSingleTrack(
             'Pack Current',
             'A',
-            <Zap className="w-3.5 h-3.5 text-slate-400" />,
-            '#38bdf8', // Steel sky blue
+            <Zap className="w-3.5 h-3.5 text-cyan-400" />,
+            '#38bdf8', // Neon Sky Cyan
             (r) => r.current_a,
             undefined,
             undefined,
@@ -513,13 +549,13 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
           renderSingleTrack(
             'Cell Temperature',
             '°C',
-            <Thermometer className="w-3.5 h-3.5 text-slate-400" />,
-            '#fb7185', // Subdued terracotta / coral
+            <Thermometer className="w-3.5 h-3.5 text-cyan-400" />,
+            '#22d3ee', // Radiant Cyan
             (r) => r.temperature_c,
             undefined,
             undefined,
             config.tempAlertThreshold,
-            `Exposure Baseline (>${config.tempAlertThreshold}°C)`,
+            `Thermal Threshold (>${config.tempAlertThreshold}°C)`,
             viewMode === 'temperature' ? 240 : 135
           )}
 
@@ -527,8 +563,8 @@ export const InteractiveCharts: React.FC<InteractiveChartsProps> = ({
           renderSingleTrack(
             'State of Charge',
             '%',
-            <Battery className="w-3.5 h-3.5 text-slate-400" />,
-            '#34d399', // Clean sage green
+            <Battery className="w-3.5 h-3.5 text-cyan-400" />,
+            '#67e8f9', // Light Glow Cyan
             (r) => r.soc_pct,
             0,
             100,
