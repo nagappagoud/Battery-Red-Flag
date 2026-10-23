@@ -15,12 +15,19 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { SAMPLE_DATASETS, downloadCsvFile, SAMPLE_STANDARD_CYCLE } from '../utils/sampleData';
+import { DataSourceType } from '../types/bms';
 
 interface UploadSectionProps {
-  onDataLoaded: (csvText: string, sourceName: string) => void;
+  onDataLoaded: (
+    csvText: string,
+    sourceName: string,
+    dataSource?: DataSourceType,
+    isSimulated?: boolean
+  ) => void;
   currentLoadedSource?: string;
   hasData: boolean;
 }
+
 
 export const UploadSection: React.FC<UploadSectionProps> = ({
   onDataLoaded,
@@ -47,7 +54,7 @@ export const UploadSection: React.FC<UploadSectionProps> = ({
         setErrorMessage('Uploaded file is empty.');
         return;
       }
-      onDataLoaded(text, file.name);
+      onDataLoaded(text, file.name, 'uploaded_csv', false);
     };
     reader.onerror = () => {
       setErrorMessage('Failed to read file. Please try again.');
@@ -78,8 +85,9 @@ export const UploadSection: React.FC<UploadSectionProps> = ({
       setErrorMessage('Please paste or enter CSV records first.');
       return;
     }
-    onDataLoaded(manualText, 'Manual Entry Records');
+    onDataLoaded(manualText, 'Manual Entry Records', 'manual_entry', false);
   };
+
 
   const handleDownloadSampleCsv = () => {
     downloadCsvFile(SAMPLE_STANDARD_CYCLE.trim(), 'sample_bms_telemetry.csv');
@@ -247,9 +255,10 @@ export const UploadSection: React.FC<UploadSectionProps> = ({
           {SAMPLE_DATASETS.map((sample) => (
             <button
               key={sample.id}
-              onClick={() => onDataLoaded(sample.csvContent, sample.title)}
+              onClick={() => onDataLoaded(sample.csvContent, sample.title, 'reference_sample', true)}
               className="text-left p-3.5 rounded-lg border border-slate-800/80 bg-slate-900/40 hover:bg-slate-800/50 hover:border-slate-700 transition-all group flex flex-col justify-between"
             >
+
               <div>
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <span className="text-xs font-semibold text-slate-200 group-hover:text-white transition-colors">

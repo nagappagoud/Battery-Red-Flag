@@ -7,7 +7,10 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   BMSAnalysisResult,
   DEFAULT_PLAUSIBILITY_CONFIG,
+  DataSourceType,
+  InvestigationResult,
   PlausibilityConfig,
+  SupabaseStatus,
 } from './types/bms';
 import { parseBmsCsv } from './utils/bmsParser';
 import { groupAndSummarizeBmsData } from './utils/bmsAggregator';
@@ -23,6 +26,8 @@ import { DataPreviewTable } from './components/DataPreviewTable';
 import { MethodologyNote } from './components/MethodologyNote';
 import { PlausibilitySettingsModal } from './components/PlausibilitySettingsModal';
 import { DocumentationModal } from './components/DocumentationModal';
+import { SupabaseModal } from './components/SupabaseModal';
+import { InvestigationPanel } from './components/InvestigationPanel';
 
 import {
   Layers,
@@ -32,15 +37,31 @@ import {
   Upload,
   BookOpen,
   Sliders,
+  ShieldAlert,
 } from 'lucide-react';
+import { fetchSupabaseStatus, fetchPersistedSessionDetails } from './utils/supabaseClient';
 
 export default function App() {
-  const [csvContent, setCsvContent] = useState<string>('');
-  const [loadedSourceTitle, setLoadedSourceTitle] = useState<string>('');
+  const [csvContent, setCsvContent] = useState<string>(() => {
+    return localStorage.getItem('bms_active_csv') || '';
+  });
+  const [loadedSourceTitle, setLoadedSourceTitle] = useState<string>(() => {
+    return localStorage.getItem('bms_active_source_title') || '';
+  });
+  const [dataSource, setDataSource] = useState<DataSourceType>(() => {
+    return (localStorage.getItem('bms_active_data_source') as DataSourceType) || 'reference_sample';
+  });
+  const [isSimulated, setIsSimulated] = useState<boolean>(() => {
+    return localStorage.getItem('bms_active_is_simulated') === 'true';
+  });
+  const [activeSessionDbId, setActiveSessionDbId] = useState<string | undefined>(() => {
+    return localStorage.getItem('bms_active_session_db_id') || undefined;
+  });
+  const [existingInvestigation, setExistingInvestigation] = useState<InvestigationResult | null>(null);
   const [config, setConfig] = useState<PlausibilityConfig>(DEFAULT_PLAUSIBILITY_CONFIG);
 
   // Active navigation tab
-  const [activeTab, setActiveTab] = useState<'overview' | 'quality' | 'sessions' | 'charts' | 'table' | 'upload'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'quality' | 'sessions' | 'charts' | 'table' | 'upload' | 'investigation'>('overview');
 
   // Selected vehicle & session
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>('');
@@ -49,6 +70,32 @@ export default function App() {
   // Modals
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState(false);
+  const [supabaseStatus, setSupabaseStatus] = useState<SupabaseStatus | null>(null);
+
+  // Check Supabase health on startup
+  const checkStatus = useCallback(() => {
+    fetchSupabaseStatus().then((s) => setSupabaseStatus(s));
+  }, []);
+
+  useEffect(() => {
+    checkStatus();
+  }, [checkStatus]);
+
+  // Persist session to localStorage so active view survives browser refreshes
+  useEffect(() => {
+    if (csvContent) {
+      localStorage.setItem('bms_active_csv', csvContent);
+      localStorage.setItem('bms_active_source_title', loadedSourceTitle);
+      localStorage.setItem('bms_active_data_source', dataSource);
+      localStorage.setItem('bms_active_is_simulated', String(isSimulated));
+      if (activeSessionDbId) {
+        localStorage.setItem('bms_active_session_db_id', activeSessionDbId);
+      } else {
+        localStorage.removeItem('bms_active_session_db_id');
+      }
+    }
+  }, [csvContent, loadedSourceTitle, dataSource, isSimulated, activeSessionDbId]);
 
   // Analyze BMS data whenever CSV or screening config changes
   const analysisResult: BMSAnalysisResult | null = useMemo(() => {
@@ -86,14 +133,28 @@ export default function App() {
     }
   }, [analysisResult, selectedVehicleId, selectedSessionId]);
 
-  const handleDataLoaded = useCallback((newCsv: string, sourceName: string) => {
+  const handleDataLoaded = useCallback((
+    newCsv: string,
+    sourceName: string,
+    srcType: DataSourceType = 'uploaded_csv',
+    simulated: boolean = false
+  ) => {
     setCsvContent(newCsv);
     setLoadedSourceTitle(sourceName);
+    setDataSource(srcType);
+    setIsSimulated(simulated);
+    setActiveSessionDbId(undefined);
+    setExistingInvestigation(null);
     setActiveTab('overview');
   }, []);
 
   const handleLoadDefaultSample = useCallback(() => {
-    handleDataLoaded(SAMPLE_STANDARD_CYCLE.trim(), 'Standard Drive & DC Fast-Charge Cycle');
+    handleDataLoaded(
+      SAMPLE_STANDARD_CYCLE.trim(),
+      'Standard Drive & DC Fast-Charge Cycle',
+      'reference_sample',
+      true
+    );
   }, [handleDataLoaded]);
 
   const handleResetData = useCallback(() => {
@@ -101,7 +162,39 @@ export default function App() {
     setLoadedSourceTitle('');
     setSelectedVehicleId('');
     setSelectedSessionId('');
+    setActiveSessionDbId(undefined);
+    setExistingInvestigation(null);
+    localStorage.removeItem('bms_active_csv');
+    localStorage.removeItem('bms_active_source_title');
+    localStorage.removeItem('bms_active_data_source');
+    localStorage.removeItem('bms_active_is_simulated');
+    localStorage.removeItem('bms_active_session_db_id');
     setActiveTab('upload');
+  }, []);
+
+  const handleLoadPersistedSession = useCallback(async (sessionId: string) => {
+    const data = await fetchPersistedSessionDetails(sessionId);
+    if (!data || !data.records || data.records.length === 0) return;
+
+    const header = 'timestamp,vehicle_id,voltage_v,current_a,temperature_c,soc_pct,mode';
+    const lines = [
+      header,
+      ...data.records.map((r: any) =>
+        `${r.timestamp || ''},${r.vehicle_id || ''},${r.voltage_v ?? ''},${r.current_a ?? ''},${r.temperature_c ?? ''},${r.soc_pct ?? ''},${r.mode || ''}`
+      ),
+    ];
+    const reconstructedCsv = lines.join('\n');
+
+    setCsvContent(reconstructedCsv);
+    setLoadedSourceTitle(data.session?.label || `Supabase Session (${sessionId})`);
+    setDataSource('supabase_stored');
+    setIsSimulated(data.session?.is_simulated || false);
+    setActiveSessionDbId(sessionId);
+    setExistingInvestigation(data.investigation || null);
+    if (data.session?.config_used) {
+      setConfig((prev) => ({ ...prev, ...data.session.config_used }));
+    }
+    setActiveTab('overview');
   }, []);
 
   const activeRecordsForCharts = useMemo(() => {
@@ -114,15 +207,18 @@ export default function App() {
     return session ? session.records : group.overallSummary.records;
   }, [analysisResult, selectedVehicleId, selectedSessionId]);
 
+
   return (
     <div className="min-h-screen bg-[#090d16] text-slate-200 flex flex-col font-sans selection:bg-slate-800 selection:text-slate-100">
       {/* Top Application Header */}
       <Header
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenGuide={() => setIsGuideOpen(true)}
+        onOpenSupabase={() => setIsSupabaseModalOpen(true)}
         onReset={handleResetData}
         onLoadDefaultSample={handleLoadDefaultSample}
         hasData={!!analysisResult}
+        supabaseStatus={supabaseStatus}
       />
 
       {/* Main Container */}
@@ -137,10 +233,10 @@ export default function App() {
             <div className="bg-[#0e131d] border border-slate-800/80 rounded-xl p-8 sm:p-10 text-center space-y-4">
               <div className="max-w-xl mx-auto space-y-2">
                 <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-100">
-                  EV Battery Telemetry Inspection
+                  EV Battery Telemetry Inspection &amp; Red Flag Screener
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                  Ingest raw or pre-filtered BMS time-series streams to run deterministic data-quality verification, evaluate chronological consistency, segment driving and charging sessions, and inspect synchronized parametric waveforms.
+                  Ingest raw or pre-filtered BMS time-series streams to run deterministic data-quality verification, evaluate chronological consistency, segment driving and charging sessions, inspect synchronized waveforms, and persist records to Supabase PostgreSQL.
                 </p>
               </div>
 
@@ -151,6 +247,13 @@ export default function App() {
                 >
                   <Upload className="w-3.5 h-3.5" />
                   <span>Load Reference Dataset</span>
+                </button>
+                <button
+                  onClick={() => setIsSupabaseModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 hover:border-slate-700 transition-colors"
+                >
+                  <ShieldAlert className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Supabase Database</span>
                 </button>
                 <button
                   onClick={() => setIsSettingsOpen(true)}
@@ -227,6 +330,18 @@ export default function App() {
                 </button>
 
                 <button
+                  onClick={() => setActiveTab('investigation')}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                    activeTab === 'investigation'
+                      ? 'bg-slate-800 text-slate-100 shadow-sm border border-slate-700/70'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <ShieldAlert className="w-3.5 h-3.5" />
+                  <span>Investigation &amp; DB</span>
+                </button>
+
+                <button
                   onClick={() => setActiveTab('table')}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                     activeTab === 'table'
@@ -272,6 +387,20 @@ export default function App() {
                   config={config}
                 />
 
+                <InvestigationPanel
+                  analysis={analysisResult}
+                  selectedVehicleId={selectedVehicleId}
+                  sourceTitle={loadedSourceTitle}
+                  dataSource={dataSource}
+                  isSimulated={isSimulated}
+                  config={config}
+                  supabaseStatus={supabaseStatus}
+                  activeSessionDbId={activeSessionDbId}
+                  onSessionPersisted={(id) => setActiveSessionDbId(id)}
+                  existingInvestigation={existingInvestigation}
+                  onOpenSupabaseModal={() => setIsSupabaseModalOpen(true)}
+                />
+
                 <QualityCheckReport
                   report={analysisResult.qualityReport}
                   config={config}
@@ -311,14 +440,39 @@ export default function App() {
               </div>
             )}
 
-            {/* Tab 4: Records Table */}
+            {/* Tab 4: Investigation & Database */}
+            {activeTab === 'investigation' && (
+              <div className="space-y-6">
+                <InvestigationPanel
+                  analysis={analysisResult}
+                  selectedVehicleId={selectedVehicleId}
+                  sourceTitle={loadedSourceTitle}
+                  dataSource={dataSource}
+                  isSimulated={isSimulated}
+                  config={config}
+                  supabaseStatus={supabaseStatus}
+                  activeSessionDbId={activeSessionDbId}
+                  onSessionPersisted={(id) => setActiveSessionDbId(id)}
+                  existingInvestigation={existingInvestigation}
+                  onOpenSupabaseModal={() => setIsSupabaseModalOpen(true)}
+                />
+
+                <QualityCheckReport
+                  report={analysisResult.qualityReport}
+                  config={config}
+                  onOpenSettings={() => setIsSettingsOpen(true)}
+                />
+              </div>
+            )}
+
+            {/* Tab 5: Records Table */}
             {activeTab === 'table' && (
               <div className="space-y-6">
                 <DataPreviewTable records={analysisResult.records} />
               </div>
             )}
 
-            {/* Tab 5: Ingest Stream */}
+            {/* Tab 6: Ingest Stream */}
             {activeTab === 'upload' && (
               <div className="space-y-6">
                 <UploadSection
@@ -345,13 +499,28 @@ export default function App() {
         onClose={() => setIsGuideOpen(false)}
       />
 
+      <SupabaseModal
+        isOpen={isSupabaseModalOpen}
+        onClose={() => setIsSupabaseModalOpen(false)}
+        status={supabaseStatus}
+        onRefreshStatus={checkStatus}
+        onLoadSession={handleLoadPersistedSession}
+      />
+
       {/* Footer */}
       <footer className="border-t border-slate-900 bg-[#070a12] py-5 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p>
-            EV BMS Data Analyzer · Deterministic Telemetry Quality Screener &amp; Descriptive Analyzer
+            Battery Red Flag · EV BMS Data Quality Screener, Oscilloscope &amp; Supabase Storage
           </p>
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsSupabaseModalOpen(true)}
+              className="hover:text-slate-300"
+            >
+              Supabase Status
+            </button>
+            <span className="text-slate-700">·</span>
             <button
               onClick={() => setIsGuideOpen(true)}
               className="hover:text-slate-300"
@@ -371,3 +540,4 @@ export default function App() {
     </div>
   );
 }
+

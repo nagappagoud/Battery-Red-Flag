@@ -18,8 +18,20 @@ import {
 } from '../middle';
 import fs from 'fs';
 import path from 'path';
+import {
+  checkSupabaseHealth,
+  persistBmsDataset,
+  getPersistedSessions,
+  loadPersistedSessionData,
+  acknowledgeAlertInSupabase,
+  saveInvestigationToSupabase,
+  getSupabaseCredentials,
+  SUPABASE_PROJECT_ID,
+  SUPABASE_REGION,
+} from './supabase';
 
 export const backendRouter = Router();
+
 
 /**
  * Health check endpoint
@@ -163,3 +175,152 @@ backendRouter.get('/download-project-zip', (_req: Request, res: Response) => {
     });
   }
 });
+
+// ============================================================================
+// SUPABASE POSTGRESQL INTEGRATION ROUTES
+// ============================================================================
+
+/**
+ * Returns Supabase connection status, health check, and schema readiness
+ */
+backendRouter.get('/supabase/status', async (_req: Request, res: Response) => {
+  try {
+    const status = await checkSupabaseHealth();
+    res.json(status);
+  } catch (err: any) {
+    res.status(500).json({
+      configured: false,
+      connected: false,
+      projectId: SUPABASE_PROJECT_ID,
+      region: SUPABASE_REGION,
+      error: err?.message || 'Error executing Supabase health probe',
+    });
+  }
+});
+
+/**
+ * Persists an ingested BMS dataset into Supabase PostgreSQL
+ */
+backendRouter.post('/supabase/save', async (req: Request, res: Response) => {
+  try {
+    const { vehicleId, sourceName, dataSource, isSimulated, analysis, config } = req.body;
+
+    if (!analysis || !analysis.records || !analysis.vehicleGroups) {
+      res.status(400).json({ error: 'Valid BMS analysis data payload is required.' });
+      return;
+    }
+
+    const resolvedVehicleId =
+      vehicleId ||
+      analysis.vehicleIds?.[0] ||
+      Object.keys(analysis.vehicleGroups)?.[0] ||
+      'EV-01';
+
+    const result = await persistBmsDataset({
+      vehicleId: resolvedVehicleId,
+      sourceName: sourceName || 'Ingested Telemetry Stream',
+      dataSource: dataSource || 'uploaded_csv',
+      isSimulated: Boolean(isSimulated),
+      analysis,
+      config: config || DEFAULT_PLAUSIBILITY_CONFIG,
+    });
+
+    res.json(result);
+  } catch (err: any) {
+    console.error('[API /supabase/save] Error:', err);
+    res.status(500).json({
+      error: 'Failed to persist dataset to Supabase PostgreSQL',
+      details: err?.message,
+    });
+  }
+});
+
+/**
+ * Lists previously persisted BMS telemetry sessions
+ */
+backendRouter.get('/supabase/sessions', async (_req: Request, res: Response) => {
+  try {
+    const sessions = await getPersistedSessions();
+    res.json(sessions);
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to fetch sessions from Supabase', details: err?.message });
+  }
+});
+
+/**
+ * Loads a specific persisted session with its synchronized battery readings
+ */
+backendRouter.get('/supabase/sessions/:id', async (req: Request, res: Response) => {
+  try {
+    const sessionId = req.params.id;
+    const sessionData = await loadPersistedSessionData(sessionId);
+
+    if (!sessionData) {
+      res.status(404).json({ error: 'Session not found in Supabase' });
+      return;
+    }
+
+    res.json(sessionData);
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to load session details', details: err?.message });
+  }
+});
+
+/**
+ * Acknowledges a BMS alert in Supabase
+ */
+backendRouter.post('/supabase/alerts/:id/ack', async (req: Request, res: Response) => {
+  try {
+    const alertId = req.params.id;
+    const { acknowledgedBy, notes } = req.body || {};
+
+    const success = await acknowledgeAlertInSupabase({
+      alertId,
+      acknowledgedBy: acknowledgedBy || 'Battery Safety Engineer',
+      notes,
+    });
+
+    if (!success) {
+      res.status(500).json({ error: 'Could not update alert acknowledgement status in database' });
+      return;
+    }
+
+    res.json({ success: true, alertId });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to acknowledge alert', details: err?.message });
+  }
+});
+
+/**
+ * Saves or updates investigation results
+ */
+backendRouter.post('/supabase/investigations', async (req: Request, res: Response) => {
+  try {
+    const { sessionId, vehicleId, status, engineerNotes, rootCauseCategory, findings, investigatedBy } = req.body;
+
+    if (!sessionId || !vehicleId) {
+      res.status(400).json({ error: 'sessionId and vehicleId are required' });
+      return;
+    }
+
+    const saved = await saveInvestigationToSupabase({
+      sessionId,
+      vehicleId,
+      status: status || 'pending',
+      engineerNotes: engineerNotes || '',
+      rootCauseCategory: rootCauseCategory || 'unspecified',
+      findings: findings || {},
+      investigatedBy,
+    });
+
+    if (!saved) {
+      res.status(500).json({ error: 'Could not save investigation to Supabase' });
+      return;
+    }
+
+    res.json(saved);
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to save investigation record', details: err?.message });
+  }
+});
+

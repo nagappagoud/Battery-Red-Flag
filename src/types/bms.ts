@@ -134,3 +134,76 @@ export interface BMSAnalysisResult {
   vehicleIds: string[];
   configUsed: PlausibilityConfig;
 }
+
+export type DataSourceType = 'uploaded_csv' | 'manual_entry' | 'reference_sample' | 'connected_stream' | 'supabase_stored';
+
+export interface BMSAlert {
+  id: string;
+  session_id: string;
+  vehicle_id: string;
+  alert_type: string;
+  severity: 'info' | 'warning' | 'error' | 'critical';
+  field?: string;
+  message: string;
+  row_number?: number;
+  timestamp?: string;
+  acknowledged: boolean;
+  acknowledged_at?: string | null;
+  acknowledged_by?: string | null;
+  acknowledgement_notes?: string | null;
+  created_at?: string;
+}
+
+export type InvestigationStatus = 'pending' | 'in_progress' | 'resolved' | 'flagged_critical';
+export type RootCauseCategory =
+  | 'unspecified'
+  | 'thermal_excursion'
+  | 'cell_voltage_sag'
+  | 'sensor_drift'
+  | 'overcurrent_spike'
+  | 'data_dropout'
+  | 'normal_operation';
+
+export interface InvestigationResult {
+  id: string;
+  session_id: string;
+  vehicle_id: string;
+  status: InvestigationStatus;
+  engineer_notes: string;
+  root_cause_category: RootCauseCategory;
+  findings?: Record<string, any>;
+  investigated_by?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface SupabaseStatus {
+  configured: boolean;
+  connected: boolean;
+  projectUrl: string;
+  projectId: string;
+  region: string;
+  tablesExist?: boolean;
+  missingTables?: string[];
+  error?: string | null;
+  timestamp: string;
+}
+
+export interface PersistedSessionItem {
+  id: string;
+  vehicle_id: string;
+  session_index: number;
+  label: string;
+  mode: string;
+  data_source: DataSourceType;
+  is_simulated: boolean;
+  start_time: string;
+  end_time: string;
+  duration_seconds: number;
+  total_records: number;
+  valid_records: number;
+  created_at: string;
+  alerts_count?: number;
+  unacknowledged_alerts_count?: number;
+}
+
